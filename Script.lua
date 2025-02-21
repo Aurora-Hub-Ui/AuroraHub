@@ -22,7 +22,7 @@ topBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 -- Title
 local title = Instance.new("TextLabel")
 title.Parent = topBar
-title.Text = "Speed Hub X | Version 5.1.8"
+title.Text = "Aurora Hub | Version 1.0.0"
 title.Size = UDim2.new(1, -40, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
