@@ -22,7 +22,7 @@ topBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 -- Title
 local title = Instance.new("TextLabel")
 title.Parent = topBar
-title.Text = "Aurora Hub | Version 1.0.0"
+title.Text = "Aurora Hub | Version 1.0.1"
 title.Size = UDim2.new(1, -40, 1, 0)
 title.Position = UDim2.new(0, 10, 0, 0)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -93,79 +93,89 @@ for i, info in pairs(buttons) do
     end)
 end
 
--- Troll Page Content
-local function createToggle(text, position, callback)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Parent = trollPage
-    toggleFrame.Size = UDim2.new(0, 200, 0, 40)
-    toggleFrame.Position = position
-    toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+-- Player Dropdown Menu
+local dropdown = Instance.new("TextButton")
+dropdown.Parent = trollPage
+dropdown.Size = UDim2.new(0, 200, 0, 40)
+dropdown.Position = UDim2.new(0, 20, 0, 20)
+dropdown.Text = "Select Player"
+dropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+dropdown.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+dropdown.Font = Enum.Font.GothamBold
+dropdown.TextSize = 14
 
-    local toggleText = Instance.new("TextLabel")
-    toggleText.Parent = toggleFrame
-    toggleText.Size = UDim2.new(1, -40, 1, 0)
-    toggleText.Position = UDim2.new(0, 10, 0, 0)
-    toggleText.Text = text
-    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleText.BackgroundTransparency = 1
-    toggleText.Font = Enum.Font.GothamBold
-    toggleText.TextSize = 14
-    toggleText.TextXAlignment = Enum.TextXAlignment.Left
+local dropdownMenu = Instance.new("Frame")
+dropdownMenu.Parent = dropdown
+dropdownMenu.Size = UDim2.new(1, 0, 0, 100)
+dropdownMenu.Position = UDim2.new(0, 0, 1, 5)
+dropdownMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+dropdownMenu.Visible = false
 
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Parent = toggleFrame
-    toggleButton.Size = UDim2.new(0, 30, 1, 0)
-    toggleButton.Position = UDim2.new(1, -30, 0, 0)
-    toggleButton.Text = "->"
-    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    toggleButton.Font = Enum.Font.GothamBold
-    toggleButton.TextSize = 14
+dropdown.MouseButton1Click:Connect(function()
+    dropdownMenu.Visible = not dropdownMenu.Visible
+end)
 
-    local toggled = false
+local selectedPlayer = nil
 
-    toggleButton.MouseButton1Click:Connect(function()
-        toggled = not toggled
-        toggleButton.Text = toggled and "<-" or "->"
-        callback(toggled)
-    end)
-end
-
--- Freeze Players Function
-local function freezePlayers(enable)
+local function updateDropdown()
+    for _, v in pairs(dropdownMenu:GetChildren()) do
+        if v:IsA("TextButton") then
+            v:Destroy()
+        end
+    end
+    
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
-            local character = player.Character
-            if character then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.WalkSpeed = enable and 0 or 16
-                    humanoid.JumpPower = enable and 0 or 50
-                end
-            end
+            local playerButton = Instance.new("TextButton")
+            playerButton.Parent = dropdownMenu
+            playerButton.Size = UDim2.new(1, 0, 0, 20)
+            playerButton.Text = player.Name
+            playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            playerButton.Font = Enum.Font.GothamBold
+            playerButton.TextSize = 12
+            
+            playerButton.MouseButton1Click:Connect(function()
+                selectedPlayer = player
+                dropdown.Text = "Selected: " .. player.Name
+                dropdownMenu.Visible = false
+            end)
         end
     end
 end
 
--- Fling Players Function
-local function flingPlayers(enable)
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            local character = player.Character
-            if character then
-                local root = character:FindFirstChild("HumanoidRootPart")
-                if root then
-                    if enable then
-                        root.Velocity = Vector3.new(math.random(-500, 500), math.random(500, 1000), math.random(-500, 500))
-                    else
-                        root.Velocity = Vector3.new(0, 0, 0)
-                    end
-                end
+game.Players.PlayerAdded:Connect(updateDropdown)
+game.Players.PlayerRemoving:Connect(updateDropdown)
+updateDropdown()
+
+-- Freeze Button
+local freezeButton = Instance.new("TextButton")
+freezeButton.Parent = trollPage
+freezeButton.Size = UDim2.new(0, 200, 0, 40)
+freezeButton.Position = UDim2.new(0, 20, 0, 70)
+freezeButton.Text = "Freeze Player"
+freezeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+freezeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+freezeButton.Font = Enum.Font.GothamBold
+freezeButton.TextSize = 14
+
+local frozenPlayers = {}
+
+freezeButton.MouseButton1Click:Connect(function()
+    if selectedPlayer and selectedPlayer.Character then
+        local humanoid = selectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if frozenPlayers[selectedPlayer] then
+                humanoid.WalkSpeed = 16
+                humanoid.JumpPower = 50
+                frozenPlayers[selectedPlayer] = nil
+                freezeButton.Text = "Freeze Player"
+            else
+                humanoid.WalkSpeed = 0
+                humanoid.JumpPower = 0
+                frozenPlayers[selectedPlayer] = true
+                freezeButton.Text = "Unfreeze Player"
             end
         end
     end
-end
-
--- Create Toggles for Troll Page
-createToggle("Freeze Players", UDim2.new(0, 20, 0, 20), freezePlayers)
-createToggle("Fling Players", UDim2.new(0, 20, 0, 70), flingPlayers)
+end)
