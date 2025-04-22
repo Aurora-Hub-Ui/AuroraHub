@@ -1,39 +1,16 @@
--- Object names to ESP
-local targets = {
-    "FindCode",
-    "FindSafe",
-    "OpenSafe",
-    "GetKey",
-    "FindBox"
-}
+local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
 
-local function createESP(obj)
-    if obj:IsA("BasePart") and not obj:FindFirstChild("ESP") then
-        local esp = Instance.new("BoxHandleAdornment")
-        esp.Name = "ESP"
-        esp.Adornee = obj
-        esp.Size = obj.Size
-        esp.Color3 = Color3.fromRGB(0, 255, 0)
-        esp.AlwaysOnTop = true
-        esp.ZIndex = 10
-        esp.Transparency = 0.5
-        esp.Parent = obj
-    end
-end
+-- config
+ESP.Players = false
+ESP.Boxes = false
+ESP.Names = true
+ESP:Toggle(true)
 
-local function scan()
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if table.find(targets, obj.Name) then
-            createESP(obj)
-        end
-    end
-end
-
-scan()
-
-workspace.DescendantAdded:Connect(function(obj)
-    if table.find(targets, obj.Name) then
-        task.wait(0.2)
-        createESP(obj)
-    end
-end)
+-- items
+ESP:AddObjectListener(game:GetService("Workspace").Server.SpawnedItems, {
+    Name = "OfudaBox2",
+    CustomName = "Box",
+    Color = Color3.fromRGB(0, 255, 255),
+    isEnabled = "ofudaEsp"
+})
+ESP.ofudaEsp = true
