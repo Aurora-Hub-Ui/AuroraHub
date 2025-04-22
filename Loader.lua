@@ -11,6 +11,6 @@ ESP:AddObjectListener(Workspace.Server.SpawnedItems, {
     Name = "OfudaBox2",
     CustomName = "Box",
     Color = Color3.fromRGB(0, 255, 255),
-    isEnabled = "ofudaEsp"
+    IsEnabled = "ofudaEsp"
 })
 ESP.ofudaEsp = true
