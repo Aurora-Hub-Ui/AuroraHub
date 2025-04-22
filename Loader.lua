@@ -7,7 +7,7 @@ ESP.Names = true
 ESP:Toggle(true)
 
 -- items
-ESP:AddObjectListener(game:GetService("Workspace").Server.SpawnedItems, {
+ESP:AddObjectListener(Workspace.Server.SpawnedItems, {
     Name = "OfudaBox2",
     CustomName = "Box",
     Color = Color3.fromRGB(0, 255, 255),
