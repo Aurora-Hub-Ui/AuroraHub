@@ -8,6 +8,9 @@ local Camera = workspace.CurrentCamera
 local ESPConfig = {
 	killers = false,
 	survivors = false,
+	items = false,
+        projectiles = false,
+        minions = false,
 	showstuds = false,
 	rainbow = false
 }
@@ -22,12 +25,14 @@ local function getRainbowColor()
 end
 
 local function attachNameTag(model, text)
-	if not model:FindFirstChild("Head") then return end
 	if model:FindFirstChild("ESPNameTag") then return end
+
+	local attachTo = model:FindFirstChild("Head") or model:IsA("BasePart") and model or model:FindFirstChildWhichIsA("BasePart")
+	if not attachTo then return end
 
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "ESPNameTag"
-	billboard.Adornee = model.Head
+	billboard.Adornee = attachTo
 	billboard.Size = UDim2.new(0, 100, 0, 60)
 	billboard.StudsOffset = Vector3.new(0, 2.5, 0)
 	billboard.AlwaysOnTop = true
@@ -52,6 +57,7 @@ local function attachNameTag(model, text)
 	hpLabel.TextScaled = true
 	hpLabel.Font = Enum.Font.SourceSans
 	hpLabel.Name = "HPLabel"
+	hpLabel.Text = ""
 	hpLabel.Parent = billboard
 
 	local distLabel = Instance.new("TextLabel")
@@ -69,9 +75,9 @@ local function updateTag(model, defaultColor)
 	local tag = model:FindFirstChild("ESPNameTag")
 	if not tag then return end
 
-	local head = model:FindFirstChild("Head")
+	local head = model:FindFirstChild("Head") or model:IsA("BasePart") and model or model:FindFirstChildWhichIsA("BasePart")
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
-	if not (head and humanoid) then return end
+	if not head then return end
 
 	local hpLabel = tag:FindFirstChild("HPLabel")
 	local distLabel = tag:FindFirstChild("DistLabel")
@@ -83,9 +89,13 @@ local function updateTag(model, defaultColor)
 		nameLabel.TextColor3 = color
 	end
 	if hpLabel then
-		local hp = math.floor(humanoid.Health)
-		local maxHp = math.floor(humanoid.MaxHealth)
-		hpLabel.Text = tostring(hp) .. "/" .. tostring(maxHp)
+		if humanoid then
+			local hp = math.floor(humanoid.Health)
+			local maxHp = math.floor(humanoid.MaxHealth)
+			hpLabel.Text = tostring(hp) .. "/" .. tostring(maxHp)
+		else
+			hpLabel.Text = ""
+		end
 		hpLabel.TextColor3 = color
 	end
 	if distLabel then
@@ -115,6 +125,39 @@ local function espAll()
 		for _, model in pairs(KillersFolder:GetChildren()) do
 			attachNameTag(model, model.Name)
 			updateTag(model, Color3.fromRGB(255, 0, 0))
+		end
+	end
+
+	local itemFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+	if itemFolder then
+		if ESPConfig.items then
+			for _, obj in pairs(itemFolder:GetChildren()) do
+				if obj.Name == "BloxyCola" or obj.Name == "Medkit" then
+					attachNameTag(obj, obj.Name)
+					updateTag(obj, Color3.fromRGB(255, 255, 255))
+				end
+			end
+		end
+
+		if ESPConfig.projectiles then
+			for _, obj in pairs(itemFolder:GetChildren()) do
+				if obj.Name == "shockwave" then
+					attachNameTag(obj, "Mass Infection")
+					updateTag(obj, Color3.fromRGB(255, 255, 255))
+				elseif obj.Name == "Swords" then
+					attachNameTag(obj, "Entanglement")
+					updateTag(obj, Color3.fromRGB(255, 255, 255))
+				end
+			end
+		end
+
+		if ESPConfig.minions then
+			for _, obj in pairs(itemFolder:GetChildren()) do
+				if obj.Name == "1x1x1x1Zombie" then
+					attachNameTag(obj, "1x1x1x1 Zombie")
+					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- green
+				end
+			end
 		end
 	end
 end
