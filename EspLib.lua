@@ -6,10 +6,10 @@ local Camera = workspace.CurrentCamera
 
 -- CONFIG
 local ESPConfig = {
-	killers = true,
-	survivors = true,
-	showstuds = true,
-	rainbow = true
+	killers = false,
+	survivors = false,
+	showstuds = false,
+	rainbow = false
 }
 
 -- Rainbow function
