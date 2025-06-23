@@ -1,6 +1,6 @@
 local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
 
-ESP.Players = false
+ESP.Players = true
 ESP.Boxes = false
 ESP.Names = true
 ESP:Toggle(true)
