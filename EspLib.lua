@@ -1,6 +1,6 @@
 local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
 
-ESP.Players = true
+ESP.Players = false
 ESP.Boxes = false
 ESP.Names = true
 ESP:Toggle(true)
@@ -14,8 +14,8 @@ ESP:AddObjectListener(Workspace.Players.Killers, {
 
 -- Cookid
 ESP:AddObjectListener(Workspace.Players.Killers, {
-    Name = "Coolkid",
-    CustomName = "Cookid",
+    Name = "c00lkidd",
+    CustomName = "Coolkid",
     Color = Color3.fromRGB(0, 255, 0),
     IsEnabled = "killerEsp"
 })
