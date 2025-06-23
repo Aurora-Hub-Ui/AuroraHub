@@ -5,10 +5,12 @@ ESP.Boxes = false
 ESP.Names = true
 ESP:Toggle(true)
 
-ESP:AddObjectListener(Workspace, { -- Object Path, For example: Workspace.ThisFolder
-    Name = "", --Object name inside of the path, for example: Workspace.ThisFolder.Item_1
-    CustomName = "", -- Name you want to be displayed
-    Color = Color3.fromRGB(0, 0, 0), -- Color
-    IsEnabled = "whatever" -- Any name, has to be the same as the last line: ESP.TheNameYouWant
+ESP:AddObjectListener(workspace.Players.Killers, {
+    Color = Color3.fromRGB(255, 0, 0),
+    IsEnabled = "killerEsp",
+    PrimaryPart = "HumanoidRootPart",
+    CustomName = function(obj)
+        return obj.Name -- shows "Jason", "Cookid", etc.
+    end
 })
-ESP.whatever = true
+ESP.killerEsp = true
