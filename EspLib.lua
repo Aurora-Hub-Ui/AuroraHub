@@ -9,6 +9,7 @@ local ESPConfig = {
 	killers = false,
 	survivors = false,
 	items = false,
+	generators = false,
         projectiles = false,
         minions = false,
 	showstuds = false,
@@ -121,6 +122,7 @@ local function espAll()
 			updateTag(model, Color3.fromRGB(255, 255, 255))
 		end
 	end
+
 	if ESPConfig.killers then
 		for _, model in pairs(KillersFolder:GetChildren()) do
 			attachNameTag(model, model.Name)
@@ -156,6 +158,18 @@ local function espAll()
 				if obj.Name == "1x1x1x1Zombie" then
 					attachNameTag(obj, "1x1x1x1 Zombie")
 					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- green
+				end
+			end
+		end
+
+		if ESPConfig.generators then
+			local mapFolder = itemFolder:FindFirstChild("Map")
+			if mapFolder then
+				for _, gen in pairs(mapFolder:GetChildren()) do
+					if gen.Name == "Generator" then
+						attachNameTag(gen, "Generator")
+						updateTag(gen, Color3.fromRGB(255, 255, 0)) -- yellow
+					end
 				end
 			end
 		end
