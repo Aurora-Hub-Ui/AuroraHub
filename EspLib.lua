@@ -4,7 +4,7 @@ local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 ESP = ESP or {
-    Enabled = true,
+    Enabled = false,
     ShowBoxes = true,
     ShowNames = true,
     ShowTracers = false,
