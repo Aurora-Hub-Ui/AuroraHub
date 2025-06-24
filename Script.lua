@@ -119,6 +119,14 @@ local cachedSettings
 local prompt = useStudio and require(script.Parent.prompt) or loadWithTimeout('https://raw.githubusercontent.com/SiriusSoftwareLtd/Sirius/refs/heads/request/prompt.lua')
 local requestFunc = (syn and syn.request) or (fluxus and fluxus.request) or (http and http.request) or http_request or request
 
+-- Validate prompt loaded correctly
+if not prompt and not useStudio then
+	warn("Failed to load prompt library, using fallback")
+	prompt = {
+		create = function() end -- No-op fallback
+	}
+end
+
 
 
 local function loadSettings()
@@ -192,7 +200,7 @@ end
 
 local promptUser = math.random(1,6)
 
-if promptUser == 1 then
+if promptUser == 1 and prompt and type(prompt.create) == "function" then
 	prompt.create(
 		'Be cautious when running scripts',
 	    [[Please be careful when running scripts from unknown developers. This script has already been ran.
@@ -210,23 +218,28 @@ local success, analyticsLib
 if not requestsDisabled then
 	if debugX then
 		warn('Querying Settings for Reporter Information')
-	end
-	local function safeLoadAnalyticsLib()
+	end	local function safeLoadAnalyticsLib()
+		if not requestFunc then
+			return nil, "No request function available"
+		end
 		local req = requestFunc({ Url = "https://analytics.sirius.menu/script", Method = "GET" })
-		if not req.Success then
-			return nil, "Failed to load analytics library: " .. req.StatusCode
+		if not req or not req.Success then
+			return nil, "Failed to load analytics library: " .. (req and req.StatusCode or "No response")
 		end
 		if not loadstring or loadstring("return 2 + 2")() ~= 4 then
 			return nil, "loadstring is not available"
 		end
 		return loadstring(req.Body)()
 	end
-
 	success, analyticsLib = pcall(safeLoadAnalyticsLib)
 	if not success then
 		warn("Failed to load analytics reporter")
-	else
+		analyticsLib = nil
+	elseif analyticsLib and type(analyticsLib.load) == "function" then
 		analyticsLib:load()
+	else
+		warn("Analytics library loaded but missing load function")
+		analyticsLib = nil
 	end
 	local function sendReport()
 		if not (type(analyticsLib) == "table" and type(analyticsLib.isLoaded) == "function" and analyticsLib:isLoaded()) then
@@ -1672,12 +1685,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 		task.spawn(function()
 			while true do
 				task.wait(math.random(180, 600))
-				RayfieldLibrary:Notify({
-					Title = "Rayfield Interface",
-					Content = "Enjoying this UI library? Find it at sirius.menu/discord",
-					Duration = 7,
-					Image = 4370033185,
-				})
 			end
 		end)
 	end
@@ -2295,7 +2302,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 				ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
 				if not ColorPickerSettings.Ext then
-					SaveConfiguration(ColorPickerSettings.Flag..'\n'..tostring(ColorPickerSettings.Color))
+					SaveConfiguration()
 				end
 			end)
 			--RGB
@@ -2316,7 +2323,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				local r,g,b = math.floor((h*255)+0.5),math.floor((s*255)+0.5),math.floor((v*255)+0.5)
 				ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
 				if not ColorPickerSettings.Ext then
-					SaveConfiguration()
+					SaveConfiguration(ColorPickerSettings.Flag..'\n'..tostring(ColorPickerSettings.Color))
 				end
 			end
 			ColorPicker.RGB.RInput.InputBox.FocusLost:connect(function()
@@ -3542,7 +3549,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 		if not success then
 			RayfieldLibrary:Notify({Title = 'Unable to Change Theme', Content = 'We are unable find a theme on file.', Image = 4400704299})
 		else
-			RayfieldLibrary:Notify({Title = 'Theme Changed', Content = 'Successfully changed theme to '..(typeof(NewTheme) == 'string' and NewTheme or 'Custom Theme')..'.', Image = 4483362748})
+
 		end
 	end
 
@@ -3740,7 +3747,7 @@ function RayfieldLibrary:LoadConfiguration()
 		end)
 
 		if success and loaded and not notified then
-			RayfieldLibrary:Notify({Title = "Rayfield Configurations", Content = "The configuration file for this script has been loaded from a previous session.", Image = 4384403532})
+
 		elseif not success and not notified then
 			warn('Rayfield Configurations Error | '..tostring(result))
 			RayfieldLibrary:Notify({Title = "Rayfield Configurations", Content = "We've encountered an issue loading your configuration correctly.\n\nCheck the Developer Console for more information.", Image = 4384402990})
