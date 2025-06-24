@@ -116,7 +116,7 @@ local function espAll()
 		if ESPConfig.projectiles then
 			for _, obj in pairs(map:GetChildren()) do
 				local nameMap = {
-					shockwave = "Mass Infection",
+					Shockwave = "Mass Infection",
 					Swords = "Entanglement",
 					HumanoidRootProjectile = "Corrupt Nature"
 				}
