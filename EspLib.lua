@@ -1,22 +1,29 @@
+-- ESP + PopupSpam Combined Module
+
 local PlayersFolder = workspace:WaitForChild("Players")
 local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
 local KillersFolder = PlayersFolder:WaitForChild("Killers")
 local LocalPlayer = game.Players.LocalPlayer
 local Camera = workspace.CurrentCamera
+local VIM = game:GetService("VirtualInputManager")
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
 
--- CONFIG
+--------------------------------------------------
+-- ESP SECTION
+--------------------------------------------------
+
 local ESPConfig = {
 	killers = false,
 	survivors = false,
 	items = false,
 	generators = false,
-        projectiles = false,
-        minions = false,
+	projectiles = false,
+	minions = false,
 	showstuds = false,
 	rainbow = false
 }
 
--- Rainbow function
 local function getRainbowColor()
 	local t = tick()
 	local r = math.sin(t * 2) * 0.5 + 0.5
@@ -27,7 +34,6 @@ end
 
 local function attachNameTag(model, text)
 	if model:FindFirstChild("ESPNameTag") then return end
-
 	local attachTo = model:FindFirstChild("Head") or model:IsA("BasePart") and model or model:FindFirstChildWhichIsA("BasePart")
 	if not attachTo then return end
 
@@ -75,7 +81,6 @@ end
 local function updateTag(model, defaultColor)
 	local tag = model:FindFirstChild("ESPNameTag")
 	if not tag then return end
-
 	local head = model:FindFirstChild("Head") or model:IsA("BasePart") and model or model:FindFirstChildWhichIsA("BasePart")
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	if not head then return end
@@ -83,12 +88,9 @@ local function updateTag(model, defaultColor)
 	local hpLabel = tag:FindFirstChild("HPLabel")
 	local distLabel = tag:FindFirstChild("DistLabel")
 	local nameLabel = tag:FindFirstChild("NameLabel")
-
 	local color = ESPConfig.rainbow and getRainbowColor() or defaultColor
 
-	if nameLabel then
-		nameLabel.TextColor3 = color
-	end
+	if nameLabel then nameLabel.TextColor3 = color end
 	if hpLabel then
 		if humanoid then
 			local hp = math.floor(humanoid.Health)
@@ -102,12 +104,7 @@ local function updateTag(model, defaultColor)
 	if distLabel then
 		local char = LocalPlayer.Character
 		if model ~= char and char and char:FindFirstChild("HumanoidRootPart") then
-			if ESPConfig.showstuds then
-				local dist = (char.HumanoidRootPart.Position - head.Position).Magnitude
-				distLabel.Text = string.format("%.0fm away", dist)
-			else
-				distLabel.Text = ""
-			end
+			distLabel.Text = ESPConfig.showstuds and string.format("%.0fm away", (char.HumanoidRootPart.Position - head.Position).Magnitude) or ""
 		else
 			distLabel.Text = ""
 		end
@@ -140,7 +137,6 @@ local function espAll()
 				end
 			end
 		end
-
 		if ESPConfig.projectiles then
 			for _, obj in pairs(itemFolder:GetChildren()) do
 				if obj.Name == "shockwave" then
@@ -152,31 +148,27 @@ local function espAll()
 				end
 			end
 		end
-
 		if ESPConfig.minions then
 			for _, obj in pairs(itemFolder:GetChildren()) do
 				if obj.Name == "1x1x1x1Zombie" then
 					attachNameTag(obj, "1x1x1x1 Zombie")
-					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- green
+					updateTag(obj, Color3.fromRGB(0, 255, 0))
 				end
 			end
 		end
-
 		if ESPConfig.generators then
 			local mapFolder = itemFolder:FindFirstChild("Map")
 			if mapFolder then
 				for _, gen in pairs(mapFolder:GetChildren()) do
 					if gen.Name == "Generator" then
 						attachNameTag(gen, "Generator")
-						updateTag(gen, Color3.fromRGB(255, 255, 0)) -- yellow
+						updateTag(gen, Color3.fromRGB(255, 255, 0))
 					end
 				end
 			end
 		end
 	end
 end
-
-espAll()
 
 task.spawn(function()
 	while true do
@@ -185,6 +177,68 @@ task.spawn(function()
 	end
 end)
 
+--------------------------------------------------
+-- POPUP SPAM SECTION
+--------------------------------------------------
+
+local popupLoop = false
+
+local function drawClick(x, y)
+	local dot = Drawing.new("Circle")
+	dot.Position = Vector2.new(x, y)
+	dot.Radius = 5
+	dot.Color = Color3.new(1, 1, 0)
+	dot.Filled = true
+	dot.Visible = true
+	task.delay(1, function()
+		dot:Remove()
+	end)
+end
+
+local function clickAt(x, y)
+	VIM:SendMouseButtonEvent(x, y, 0, true, game, 0)
+	VIM:SendMouseButtonEvent(x, y, 0, false, game, 0)
+	drawClick(x, y)
+end
+
+local function isSwordsNear()
+	local char = lp.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart")
+	local swords = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame"):FindFirstChild("Swords")
+	return hrp and swords and swords:IsA("BasePart") and (hrp.Position - swords.Position).Magnitude <= 5
+end
+
+local screenSize = Camera.ViewportSize
+local screenW = screenSize.X
+local screenH = screenSize.Y
+local spacing = 100
+
+local function popupClickSpam()
+	while popupLoop do
+		if isSwordsNear() then
+			for y = 0, screenH, spacing do
+				for x = 0, screenW, spacing do
+					if not popupLoop then return end
+					clickAt(x, y)
+					task.wait(0.01)
+				end
+			end
+		else
+			task.wait(0.2)
+		end
+	end
+end
+
+local function setPopupEnabled(state)
+	popupLoop = state
+end
+
+--------------------------------------------------
+-- RETURN BOTH AS MODULE
+--------------------------------------------------
+
 return {
-	ESPConfig = ESPConfig
+	ESPConfig = ESPConfig,
+	setPopupEnabled = setPopupEnabled,
+	popupClickSpam = popupClickSpam
 }
