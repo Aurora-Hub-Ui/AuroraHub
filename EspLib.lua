@@ -1,14 +1,24 @@
--- ESP + PopupSpam + FullBright Combined Module
+-- Combined ESP + PopupSpam + FullBright + AntiStun Module
 
--- Services & Core Setup
+-- Services
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local VIM = game:GetService("VirtualInputManager")
+local lp = Players.LocalPlayer
+local LocalPlayer = lp
+local Camera = workspace.CurrentCamera
 local PlayersFolder = workspace:WaitForChild("Players")
 local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
 local KillersFolder = PlayersFolder:WaitForChild("Killers")
-local LocalPlayer = game.Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-local VIM = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
+
+--------------------------------------------------
+-- GLOBAL STATE HOLDER
+--------------------------------------------------
+
+_G = rawget(_G, "_G") or {}
+_G.FullBrightExecuted = _G.FullBrightExecuted or false
+_G.FullBrightEnabled = _G.FullBrightEnabled or false
+_G.AntiStun = _G.AntiStun or false
 
 --------------------------------------------------
 -- ESP SECTION
@@ -172,9 +182,7 @@ local function drawClick(x, y)
 	dot.Color = Color3.new(1, 1, 0)
 	dot.Filled = true
 	dot.Visible = true
-	task.delay(1, function()
-		dot:Remove()
-	end)
+	task.delay(1, function() dot:Remove() end)
 end
 
 local function clickAt(x, y)
@@ -217,34 +225,33 @@ end
 --------------------------------------------------
 
 if not _G.FullBrightExecuted then
-	_G.FullBrightEnabled = false
 	_G.NormalLightingSettings = {
-		Brightness = game.Lighting.Brightness,
-		ClockTime = game.Lighting.ClockTime,
-		FogEnd = game.Lighting.FogEnd,
-		GlobalShadows = game.Lighting.GlobalShadows,
-		Ambient = game.Lighting.Ambient
+		Brightness = Lighting.Brightness,
+		ClockTime = Lighting.ClockTime,
+		FogEnd = Lighting.FogEnd,
+		GlobalShadows = Lighting.GlobalShadows,
+		Ambient = Lighting.Ambient
 	}
 
 	local function forceFullBright()
-		game.Lighting.Brightness = 1
-		game.Lighting.ClockTime = 12
-		game.Lighting.FogEnd = 786543
-		game.Lighting.GlobalShadows = false
-		game.Lighting.Ambient = Color3.fromRGB(178, 178, 178)
+		Lighting.Brightness = 1
+		Lighting.ClockTime = 12
+		Lighting.FogEnd = 786543
+		Lighting.GlobalShadows = false
+		Lighting.Ambient = Color3.fromRGB(178, 178, 178)
 	end
 
 	local function restoreLighting()
 		local s = _G.NormalLightingSettings
-		game.Lighting.Brightness = s.Brightness
-		game.Lighting.ClockTime = s.ClockTime
-		game.Lighting.FogEnd = s.FogEnd
-		game.Lighting.GlobalShadows = s.GlobalShadows
-		game.Lighting.Ambient = s.Ambient
+		Lighting.Brightness = s.Brightness
+		Lighting.ClockTime = s.ClockTime
+		Lighting.FogEnd = s.FogEnd
+		Lighting.GlobalShadows = s.GlobalShadows
+		Lighting.Ambient = s.Ambient
 	end
 
 	for _, prop in ipairs({ "Brightness", "ClockTime", "FogEnd", "GlobalShadows", "Ambient" }) do
-		game.Lighting:GetPropertyChangedSignal(prop):Connect(function()
+		Lighting:GetPropertyChangedSignal(prop):Connect(function()
 			if _G.FullBrightEnabled then forceFullBright() end
 		end)
 	end
@@ -264,15 +271,64 @@ if not _G.FullBrightExecuted then
 	_G.FullBrightExecuted = true
 end
 
-_G.FullBrightEnabled = not _G.FullBrightEnabled
+--------------------------------------------------
+-- ANTISTUN SECTION
+--------------------------------------------------
+
+local function setupCharacter(char)
+	local humanoid = char:WaitForChild("Humanoid")
+	humanoid.Sit = false
+	local connections = {}
+
+	local function fixState(newState)
+		if _G.AntiStun and (
+			newState == Enum.HumanoidStateType.Ragdoll or
+			newState == Enum.HumanoidStateType.FallingDown or
+			newState == Enum.HumanoidStateType.Seated or
+			newState == Enum.HumanoidStateType.PlatformStanding
+		) then
+			humanoid.Sit = false
+			humanoid.PlatformStand = false
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+			if char:FindFirstChild("HumanoidRootPart") then
+				char.HumanoidRootPart.Anchored = false
+			end
+		end
+	end
+
+	fixState(humanoid:GetState())
+
+	table.insert(connections, humanoid.StateChanged:Connect(function(_, new)
+		fixState(new)
+	end))
+
+	for _, seat in pairs(workspace:GetDescendants()) do
+		if seat:IsA("Seat") then
+			table.insert(connections, seat:GetPropertyChangedSignal("Occupant"):Connect(function()
+				if seat.Occupant == humanoid then
+					task.wait(0.1)
+					humanoid.Sit = false
+					humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+				end
+			end))
+		end
+	end
+
+	table.insert(connections, humanoid.Died:Connect(function()
+		for _, conn in ipairs(connections) do conn:Disconnect() end
+	end))
+end
+
+if lp.Character then setupCharacter(lp.Character) end
+lp.CharacterAdded:Connect(setupCharacter)
 
 --------------------------------------------------
--- RETURN ALL MODULES
+-- EXPORT MODULE
 --------------------------------------------------
 
 return {
 	ESPConfig = ESPConfig,
 	setPopupEnabled = setPopupEnabled,
 	popupClickSpam = popupClickSpam,
-	_G = _G -- so you can do ESP._G.FullBrightEnabled = true
+	_G = _G -- Access FullBright and AntiStun toggles
 }
