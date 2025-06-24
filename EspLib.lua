@@ -137,32 +137,41 @@ local function espAll()
 				end
 			end
 		end
+
 		if ESPConfig.projectiles then
 			for _, obj in pairs(itemFolder:GetChildren()) do
 				if obj.Name == "shockwave" then
 					attachNameTag(obj, "Mass Infection")
-					updateTag(obj, Color3.fromRGB(255, 255, 255))
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				elseif obj.Name == "Swords" then
 					attachNameTag(obj, "Entanglement")
-					updateTag(obj, Color3.fromRGB(255, 255, 255))
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
+				elseif obj.Name == "HumanoidRootProjectile" then
+					attachNameTag(obj, "Corrupt Nature")
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				end
 			end
 		end
+
 		if ESPConfig.minions then
 			for _, obj in pairs(itemFolder:GetChildren()) do
 				if obj.Name == "1x1x1x1Zombie" then
 					attachNameTag(obj, "1x1x1x1 Zombie")
-					updateTag(obj, Color3.fromRGB(0, 255, 0))
+					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- GREEN
+				elseif obj.Name == "PizzaDeliveryRig" then
+					attachNameTag(obj, "Pizza Delivery")
+					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- GREEN
 				end
 			end
 		end
+
 		if ESPConfig.generators then
 			local mapFolder = itemFolder:FindFirstChild("Map")
 			if mapFolder then
 				for _, gen in pairs(mapFolder:GetChildren()) do
 					if gen.Name == "Generator" then
 						attachNameTag(gen, "Generator")
-						updateTag(gen, Color3.fromRGB(255, 255, 0))
+						updateTag(gen, Color3.fromRGB(255, 255, 0)) -- YELLOW
 					end
 				end
 			end
