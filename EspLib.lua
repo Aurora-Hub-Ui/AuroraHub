@@ -88,8 +88,7 @@ local function updateTag(model, defaultColor)
 	local hpLabel = tag:FindFirstChild("HPLabel")
 	local distLabel = tag:FindFirstChild("DistLabel")
 	local nameLabel = tag:FindFirstChild("NameLabel")
-	local color = ESPConfig.rainbow and getRainbowColor() or defaultColor
-
+	local color = (ESPConfig.rainbow and getRainbowColor()) or defaultColor or Color3.fromRGB(255, 255, 255)
 	if nameLabel then nameLabel.TextColor3 = color end
 	if hpLabel then
 		if humanoid then
