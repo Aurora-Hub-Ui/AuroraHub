@@ -88,7 +88,8 @@ local function updateTag(model, defaultColor)
 	local hpLabel = tag:FindFirstChild("HPLabel")
 	local distLabel = tag:FindFirstChild("DistLabel")
 	local nameLabel = tag:FindFirstChild("NameLabel")
-	local color = (ESPConfig.rainbow and getRainbowColor()) or defaultColor or Color3.fromRGB(255, 255, 255)
+	local color = ESPConfig.rainbow and getRainbowColor() or defaultColor
+
 	if nameLabel then nameLabel.TextColor3 = color end
 	if hpLabel then
 		if humanoid then
@@ -139,15 +140,15 @@ local function espAll()
 
 		if ESPConfig.projectiles then
 			for _, obj in pairs(itemFolder:GetChildren()) do
-				if obj.Name == "Shockwave" then
+				if obj.Name == "shockwave" then
 					attachNameTag(obj, "Mass Infection")
-					updateTag(obj, Color3.fromRGB(255, 0, 0))
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				elseif obj.Name == "Swords" then
 					attachNameTag(obj, "Entanglement")
-					updateTag(obj, Color3.fromRGB(255, 0, 0))
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				elseif obj.Name == "HumanoidRootProjectile" then
 					attachNameTag(obj, "Corrupt Nature")
-					updateTag(obj, Color3.fromRGB(255, 0, 0))
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				end
 			end
 		end
@@ -156,10 +157,10 @@ local function espAll()
 			for _, obj in pairs(itemFolder:GetChildren()) do
 				if obj.Name == "1x1x1x1Zombie" then
 					attachNameTag(obj, "1x1x1x1 Zombie")
-					updateTag(obj, Color3.fromRGB(0, 255, 0))
+					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- GREEN
 				elseif obj.Name == "PizzaDeliveryRig" then
 					attachNameTag(obj, "Pizza Delivery")
-					updateTag(obj, Color3.fromRGB(0, 255, 0))
+					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- GREEN
 				end
 			end
 		end
@@ -170,7 +171,7 @@ local function espAll()
 				for _, gen in pairs(mapFolder:GetChildren()) do
 					if gen.Name == "Generator" then
 						attachNameTag(gen, "Generator")
-						updateTag(gen, Color3.fromRGB(255, 255, 0))
+						updateTag(gen, Color3.fromRGB(255, 255, 0)) -- YELLOW
 					end
 				end
 			end
