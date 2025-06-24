@@ -149,6 +149,9 @@ local function espAll()
 				elseif obj.Name == "HumanoidRootProjectile" then
 					attachNameTag(obj, "Corrupt Nature")
 					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
+				elseif obj.Name == "SubspaceTripmine" then
+					attachNameTag(obj, "Tripmine")
+					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				end
 			end
 		end
