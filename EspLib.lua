@@ -1,5 +1,6 @@
--- ESP + PopupSpam Combined Module
+-- ESP + PopupSpam + FullBright Combined Module
 
+-- Services & Core Setup
 local PlayersFolder = workspace:WaitForChild("Players")
 local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
 local KillersFolder = PlayersFolder:WaitForChild("Killers")
@@ -26,10 +27,11 @@ local ESPConfig = {
 
 local function getRainbowColor()
 	local t = tick()
-	local r = math.sin(t * 2) * 0.5 + 0.5
-	local g = math.sin(t * 2 + 2) * 0.5 + 0.5
-	local b = math.sin(t * 2 + 4) * 0.5 + 0.5
-	return Color3.new(r, g, b)
+	return Color3.new(
+		math.sin(t * 2) * 0.5 + 0.5,
+		math.sin(t * 2 + 2) * 0.5 + 0.5,
+		math.sin(t * 2 + 4) * 0.5 + 0.5
+	)
 end
 
 local function attachNameTag(model, text)
@@ -45,133 +47,104 @@ local function attachNameTag(model, text)
 	billboard.AlwaysOnTop = true
 	billboard.Parent = model
 
-	local nameLabel = Instance.new("TextLabel")
-	nameLabel.Size = UDim2.new(1, 0, 0.33, 0)
-	nameLabel.Position = UDim2.new(0, 0, 0.00, 0)
-	nameLabel.BackgroundTransparency = 1
-	nameLabel.Text = text
-	nameLabel.TextStrokeTransparency = 0.5
-	nameLabel.TextScaled = true
-	nameLabel.Font = Enum.Font.SourceSansBold
-	nameLabel.Name = "NameLabel"
-	nameLabel.Parent = billboard
+	for i, name in ipairs({ "NameLabel", "HPLabel", "DistLabel" }) do
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, 0, 0.33, 0)
+		label.Position = UDim2.new(0, 0, (i - 1) * 0.33, 0)
+		label.BackgroundTransparency = 1
+		label.TextStrokeTransparency = 0.5
+		label.TextScaled = true
+		label.Font = Enum.Font.SourceSansBold
+		label.Name = name
+		label.Text = ""
+		label.Parent = billboard
+	end
 
-	local hpLabel = Instance.new("TextLabel")
-	hpLabel.Size = UDim2.new(1, 0, 0.33, 0)
-	hpLabel.Position = UDim2.new(0, 0, 0.33, 0)
-	hpLabel.BackgroundTransparency = 1
-	hpLabel.TextStrokeTransparency = 0.5
-	hpLabel.TextScaled = true
-	hpLabel.Font = Enum.Font.SourceSans
-	hpLabel.Name = "HPLabel"
-	hpLabel.Text = ""
-	hpLabel.Parent = billboard
-
-	local distLabel = Instance.new("TextLabel")
-	distLabel.Size = UDim2.new(1, 0, 0.33, 0)
-	distLabel.Position = UDim2.new(0, 0, 0.66, 0)
-	distLabel.BackgroundTransparency = 1
-	distLabel.TextStrokeTransparency = 0.5
-	distLabel.TextScaled = true
-	distLabel.Font = Enum.Font.SourceSansItalic
-	distLabel.Name = "DistLabel"
-	distLabel.Parent = billboard
+	billboard.NameLabel.Text = text
 end
 
 local function updateTag(model, defaultColor)
 	local tag = model:FindFirstChild("ESPNameTag")
 	if not tag then return end
 	local head = model:FindFirstChild("Head") or model:IsA("BasePart") and model or model:FindFirstChildWhichIsA("BasePart")
-	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	if not head then return end
 
+	local humanoid = model:FindFirstChildOfClass("Humanoid")
 	local hpLabel = tag:FindFirstChild("HPLabel")
 	local distLabel = tag:FindFirstChild("DistLabel")
 	local nameLabel = tag:FindFirstChild("NameLabel")
 	local color = ESPConfig.rainbow and getRainbowColor() or defaultColor
 
 	if nameLabel then nameLabel.TextColor3 = color end
-	if hpLabel then
-		if humanoid then
-			local hp = math.floor(humanoid.Health)
-			local maxHp = math.floor(humanoid.MaxHealth)
-			hpLabel.Text = tostring(hp) .. "/" .. tostring(maxHp)
-		else
-			hpLabel.Text = ""
-		end
+	if hpLabel and humanoid then
+		hpLabel.Text = ("%d/%d"):format(humanoid.Health, humanoid.MaxHealth)
 		hpLabel.TextColor3 = color
 	end
 	if distLabel then
 		local char = LocalPlayer.Character
 		if model ~= char and char and char:FindFirstChild("HumanoidRootPart") then
-			distLabel.Text = ESPConfig.showstuds and string.format("%.0fm away", (char.HumanoidRootPart.Position - head.Position).Magnitude) or ""
-		else
-			distLabel.Text = ""
+			distLabel.Text = ESPConfig.showstuds and ("%dm away"):format((char.HumanoidRootPart.Position - head.Position).Magnitude) or ""
+			distLabel.TextColor3 = color
 		end
-		distLabel.TextColor3 = color
 	end
 end
 
 local function espAll()
 	if ESPConfig.survivors then
-		for _, model in pairs(SurvivorsFolder:GetChildren()) do
-			attachNameTag(model, model.Name)
-			updateTag(model, Color3.fromRGB(255, 255, 255))
+		for _, m in pairs(SurvivorsFolder:GetChildren()) do
+			attachNameTag(m, m.Name)
+			updateTag(m, Color3.fromRGB(255, 255, 255))
 		end
 	end
-
 	if ESPConfig.killers then
-		for _, model in pairs(KillersFolder:GetChildren()) do
-			attachNameTag(model, model.Name)
-			updateTag(model, Color3.fromRGB(255, 0, 0))
+		for _, m in pairs(KillersFolder:GetChildren()) do
+			attachNameTag(m, m.Name)
+			updateTag(m, Color3.fromRGB(255, 0, 0))
 		end
 	end
 
-	local itemFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
-	if itemFolder then
+	local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+	if map then
 		if ESPConfig.items then
-			for _, obj in pairs(itemFolder:GetChildren()) do
+			for _, obj in pairs(map:GetChildren()) do
 				if obj.Name == "BloxyCola" or obj.Name == "Medkit" then
 					attachNameTag(obj, obj.Name)
 					updateTag(obj, Color3.fromRGB(255, 255, 255))
 				end
 			end
 		end
-
 		if ESPConfig.projectiles then
-			for _, obj in pairs(itemFolder:GetChildren()) do
-				if obj.Name == "shockwave" then
-					attachNameTag(obj, "Mass Infection")
-					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
-				elseif obj.Name == "Swords" then
-					attachNameTag(obj, "Entanglement")
-					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
-				elseif obj.Name == "HumanoidRootProjectile" then
-					attachNameTag(obj, "Corrupt Nature")
-					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
+			for _, obj in pairs(map:GetChildren()) do
+				local nameMap = {
+					shockwave = "Mass Infection",
+					Swords = "Entanglement",
+					HumanoidRootProjectile = "Corrupt Nature"
+				}
+				if nameMap[obj.Name] then
+					attachNameTag(obj, nameMap[obj.Name])
+					updateTag(obj, Color3.fromRGB(255, 0, 0))
 				end
 			end
 		end
-
 		if ESPConfig.minions then
-			for _, obj in pairs(itemFolder:GetChildren()) do
-				if obj.Name == "1x1x1x1Zombie" then
-					attachNameTag(obj, "1x1x1x1 Zombie")
-					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- GREEN
-				elseif obj.Name == "PizzaDeliveryRig" then
-					attachNameTag(obj, "Pizza Delivery")
-					updateTag(obj, Color3.fromRGB(0, 255, 0)) -- GREEN
+			for _, obj in pairs(map:GetChildren()) do
+				local nameMap = {
+					["1x1x1x1Zombie"] = "1x1x1x1 Zombie",
+					["PizzaDeliveryRig"] = "Pizza Delivery"
+				}
+				if nameMap[obj.Name] then
+					attachNameTag(obj, nameMap[obj.Name])
+					updateTag(obj, Color3.fromRGB(0, 255, 0))
 				end
 			end
 		end
-
 		if ESPConfig.generators then
-			local mapFolder = itemFolder:FindFirstChild("Map")
-			if mapFolder then
-				for _, gen in pairs(mapFolder:GetChildren()) do
+			local folder = map:FindFirstChild("Map")
+			if folder then
+				for _, gen in pairs(folder:GetChildren()) do
 					if gen.Name == "Generator" then
 						attachNameTag(gen, "Generator")
-						updateTag(gen, Color3.fromRGB(255, 255, 0)) -- YELLOW
+						updateTag(gen, Color3.fromRGB(255, 255, 0))
 					end
 				end
 			end
@@ -217,16 +190,13 @@ local function isSwordsNear()
 	return hrp and swords and swords:IsA("BasePart") and (hrp.Position - swords.Position).Magnitude <= 5
 end
 
-local screenSize = Camera.ViewportSize
-local screenW = screenSize.X
-local screenH = screenSize.Y
-local spacing = 100
-
 local function popupClickSpam()
+	local screenSize = Camera.ViewportSize
+	local spacing = 100
 	while popupLoop do
 		if isSwordsNear() then
-			for y = 0, screenH, spacing do
-				for x = 0, screenW, spacing do
+			for y = 0, screenSize.Y, spacing do
+				for x = 0, screenSize.X, spacing do
 					if not popupLoop then return end
 					clickAt(x, y)
 					task.wait(0.01)
@@ -243,11 +213,66 @@ local function setPopupEnabled(state)
 end
 
 --------------------------------------------------
--- RETURN BOTH AS MODULE
+-- FULLBRIGHT SECTION
+--------------------------------------------------
+
+if not _G.FullBrightExecuted then
+	_G.FullBrightEnabled = false
+	_G.NormalLightingSettings = {
+		Brightness = game.Lighting.Brightness,
+		ClockTime = game.Lighting.ClockTime,
+		FogEnd = game.Lighting.FogEnd,
+		GlobalShadows = game.Lighting.GlobalShadows,
+		Ambient = game.Lighting.Ambient
+	}
+
+	local function forceFullBright()
+		game.Lighting.Brightness = 1
+		game.Lighting.ClockTime = 12
+		game.Lighting.FogEnd = 786543
+		game.Lighting.GlobalShadows = false
+		game.Lighting.Ambient = Color3.fromRGB(178, 178, 178)
+	end
+
+	local function restoreLighting()
+		local s = _G.NormalLightingSettings
+		game.Lighting.Brightness = s.Brightness
+		game.Lighting.ClockTime = s.ClockTime
+		game.Lighting.FogEnd = s.FogEnd
+		game.Lighting.GlobalShadows = s.GlobalShadows
+		game.Lighting.Ambient = s.Ambient
+	end
+
+	for _, prop in ipairs({ "Brightness", "ClockTime", "FogEnd", "GlobalShadows", "Ambient" }) do
+		game.Lighting:GetPropertyChangedSignal(prop):Connect(function()
+			if _G.FullBrightEnabled then forceFullBright() end
+		end)
+	end
+
+	forceFullBright()
+
+	task.spawn(function()
+		local last = _G.FullBrightEnabled
+		while task.wait(1) do
+			if _G.FullBrightEnabled ~= last then
+				last = _G.FullBrightEnabled
+				if last then forceFullBright() else restoreLighting() end
+			end
+		end
+	end)
+
+	_G.FullBrightExecuted = true
+end
+
+_G.FullBrightEnabled = not _G.FullBrightEnabled
+
+--------------------------------------------------
+-- RETURN ALL MODULES
 --------------------------------------------------
 
 return {
 	ESPConfig = ESPConfig,
 	setPopupEnabled = setPopupEnabled,
-	popupClickSpam = popupClickSpam
+	popupClickSpam = popupClickSpam,
+	_G = _G -- so you can do ESP._G.FullBrightEnabled = true
 }
