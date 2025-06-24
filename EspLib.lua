@@ -140,7 +140,7 @@ local function espAll()
 
 		if ESPConfig.projectiles then
 			for _, obj in pairs(itemFolder:GetChildren()) do
-				if obj.Name == "shockwave" then
+				if obj.Name == "Shockwave" then
 					attachNameTag(obj, "Mass Infection")
 					updateTag(obj, Color3.fromRGB(255, 0, 0)) -- RED
 				elseif obj.Name == "Swords" then
