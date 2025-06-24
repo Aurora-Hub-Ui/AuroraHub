@@ -256,14 +256,26 @@ if not _G.FullBrightExecuted then
 		end)
 	end
 
-	forceFullBright()
+	task.spawn(function()
+		while true do
+			if _G.FullBrightEnabled then
+				forceFullBright()
+			end
+			task.wait(3)
+		end
+	end)
 
 	task.spawn(function()
 		local last = _G.FullBrightEnabled
-		while task.wait(1) do
+		while true do
+			task.wait(1)
 			if _G.FullBrightEnabled ~= last then
 				last = _G.FullBrightEnabled
-				if last then forceFullBright() else restoreLighting() end
+				if last then
+					forceFullBright()
+				else
+					restoreLighting()
+				end
 			end
 		end
 	end)
