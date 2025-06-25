@@ -335,6 +335,136 @@ if lp.Character then setupCharacter(lp.Character) end
 lp.CharacterAdded:Connect(setupCharacter)
 
 --------------------------------------------------
+-- AUTO COMPLETE AUTO GENERATOR (ACAG) SYSTEM
+--------------------------------------------------
+
+local ran = false
+local isTriggered = false
+
+local function waitForGenerator()
+	while true do
+		local map = workspace:FindFirstChild("Map")
+		if map and map:FindFirstChild("Ingame") and map.Ingame:FindFirstChild("Map") then
+			local generator = map.Ingame.Map:FindFirstChild("Generator")
+			if generator then return generator end
+		end
+		task.wait(0.5)
+	end
+end
+
+local function getFreePosition(generator)
+	local positions = generator:WaitForChild("Positions")
+	local center = positions:FindFirstChild("Center")
+	local left = positions:FindFirstChild("Left")
+	local right = positions:FindFirstChild("Right")
+
+	local occupied = {
+		Center = false,
+		Left = false,
+		Right = false
+	}
+
+	for _, plr in pairs(Players:GetPlayers()) do
+		if plr ~= lp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+			local pos = plr.Character.HumanoidRootPart.Position
+
+			if (pos - center.Position).Magnitude <= 1 then
+				occupied.Center = true
+			elseif (pos - left.Position).Magnitude <= 1 then
+				occupied.Left = true
+			elseif (pos - right.Position).Magnitude <= 1 then
+				occupied.Right = true
+			end
+		end
+	end
+
+	if not occupied.Center then return center end
+	if not occupied.Left then return left end
+	if not occupied.Right then return right end
+
+	return nil
+end
+
+local function startRepairLoop(generator)
+	if not isTriggered then return end
+
+	local center = generator:WaitForChild("Positions"):WaitForChild("Center")
+	local remotes = generator:WaitForChild("Remotes")
+	local remoteBE = remotes:FindFirstChild("BE")
+	local remoteRE = remotes:FindFirstChild("RE")
+	local progress = generator:FindFirstChild("Progress")
+
+	task.spawn(function()
+		while generator.Parent do
+			if (lp.Character.HumanoidRootPart.Position - center.Position).Magnitude <= 10 then
+				task.wait(2.0)
+
+				if progress and progress.Value >= 78 then
+					local gui = generator:FindFirstChild("GUI")
+					if gui then gui:Destroy() end
+					generator:Destroy()
+					isTriggered = false
+					teleportAndInteract(waitForGenerator())
+					break
+				end
+
+				if remoteBE then pcall(function() remoteBE:FireServer() end) end
+				if remoteRE then pcall(function() remoteRE:FireServer() end) end
+			else
+				task.wait(0.5)
+			end
+		end
+	end)
+end
+
+function teleportAndInteract(generator)
+	if isTriggered then return end
+	local prompt = generator:FindFirstChildWhichIsA("ProximityPrompt", true)
+	local targetPos = getFreePosition(generator)
+
+	if not targetPos then
+		generator:Destroy()
+		isTriggered = false
+		task.wait(1)
+		teleportAndInteract(waitForGenerator())
+		return
+	end
+
+	task.spawn(function()
+		task.wait(2)
+		lp.Character.HumanoidRootPart.CFrame = targetPos.CFrame + Vector3.new(0, 3, 0)
+		if prompt then
+			task.wait(0.25)
+			pcall(function()
+				fireproximityprompt(prompt)
+			end)
+			isTriggered = true
+			startRepairLoop(generator)
+		end
+	end)
+end
+
+task.spawn(function()
+	while true do
+		if _G.ACAG then
+			ran = false
+		else
+			ran = true
+		end
+
+		if not ran then
+			local generator = waitForGenerator()
+			if generator then
+				ran = true
+				teleportAndInteract(generator)
+			end
+		end
+
+		task.wait(1)
+	end
+end)
+
+--------------------------------------------------
 -- EXPORT MODULE
 --------------------------------------------------
 
