@@ -343,20 +343,30 @@ local isTriggered = false
 
 local function waitForGenerator()
 	while true do
+		if not ESP._G or not ESP._G.ACAG then return end
 		local map = workspace:FindFirstChild("Map")
-		if map and map:FindFirstChild("Ingame") and map.Ingame:FindFirstChild("Map") then
-			local generator = map.Ingame.Map:FindFirstChild("Generator")
-			if generator then return generator end
+		local ingame = map and map:FindFirstChild("Ingame")
+		local nested = ingame and ingame:FindFirstChild("Map")
+		if nested then
+			for _, gen in pairs(nested:GetChildren()) do
+				if gen.Name == "Generator" then
+					return gen
+				end
+			end
 		end
 		task.wait(0.5)
 	end
 end
 
 local function getFreePosition(generator)
-	local positions = generator:WaitForChild("Positions")
+	local positions = generator:FindFirstChild("Positions")
+	if not positions then return nil end
+
 	local center = positions:FindFirstChild("Center")
 	local left = positions:FindFirstChild("Left")
 	local right = positions:FindFirstChild("Right")
+
+	if not center or not left or not right then return nil end
 
 	local occupied = {
 		Center = false,
@@ -367,7 +377,6 @@ local function getFreePosition(generator)
 	for _, plr in pairs(Players:GetPlayers()) do
 		if plr ~= lp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
 			local pos = plr.Character.HumanoidRootPart.Position
-
 			if (pos - center.Position).Magnitude <= 1 then
 				occupied.Center = true
 			elseif (pos - left.Position).Magnitude <= 1 then
@@ -388,31 +397,32 @@ end
 local function startRepairLoop(generator)
 	if not isTriggered then return end
 
-	local center = generator:WaitForChild("Positions"):WaitForChild("Center")
-	local remotes = generator:WaitForChild("Remotes")
-	local remoteBE = remotes:FindFirstChild("BE")
-	local remoteRE = remotes:FindFirstChild("RE")
+	local remotes = generator:FindFirstChild("Remotes")
+	local remoteBE = remotes and remotes:FindFirstChild("BE")
+	local remoteRE = remotes and remotes:FindFirstChild("RE")
 	local progress = generator:FindFirstChild("Progress")
+	local center = generator:FindFirstChild("Positions") and generator.Positions:FindFirstChild("Center")
 
 	task.spawn(function()
-		while generator.Parent do
-			if (lp.Character.HumanoidRootPart.Position - center.Position).Magnitude <= 10 then
-				task.wait(2.0)
-
+		while generator.Parent and ESP._G and ESP._G.ACAG do
+			local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if root and center and (root.Position - center.Position).Magnitude <= 10 then
 				if progress and progress.Value >= 78 then
 					local gui = generator:FindFirstChild("GUI")
 					if gui then gui:Destroy() end
 					generator:Destroy()
 					isTriggered = false
-					teleportAndInteract(waitForGenerator())
+					task.wait(0.5)
+					local nextGen = waitForGenerator()
+					if nextGen then
+						teleportAndInteract(nextGen)
+					end
 					break
 				end
-
 				if remoteBE then pcall(function() remoteBE:FireServer() end) end
 				if remoteRE then pcall(function() remoteRE:FireServer() end) end
-			else
-				task.wait(0.5)
 			end
+			task.wait(0.5)
 		end
 	end)
 end
@@ -421,39 +431,44 @@ function teleportAndInteract(generator)
 	if isTriggered then return end
 	local prompt = generator:FindFirstChildWhichIsA("ProximityPrompt", true)
 	local targetPos = getFreePosition(generator)
-
 	if not targetPos then
 		generator:Destroy()
 		isTriggered = false
-		task.wait(1)
-		teleportAndInteract(waitForGenerator())
+		task.wait(0.5)
+		local nextGen = waitForGenerator()
+		if nextGen then
+			teleportAndInteract(nextGen)
+		end
 		return
 	end
 
 	task.spawn(function()
-		task.wait(2)
-		lp.Character.HumanoidRootPart.CFrame = targetPos.CFrame + Vector3.new(0, 3, 0)
+		task.wait(0.5)
+		local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+		if not root then return end
+
+		root.CFrame = targetPos.CFrame + Vector3.new(0, 3, 0)
+		task.wait(0.25)
 		if prompt then
-			task.wait(0.25)
-			pcall(function()
-				fireproximityprompt(prompt)
-			end)
-			isTriggered = true
-			startRepairLoop(generator)
+			pcall(function() fireproximityprompt(prompt) end)
 		end
+		isTriggered = true
+		startRepairLoop(generator)
 	end)
 end
 
 task.spawn(function()
 	local lastState = false
 	while true do
+		task.wait(0.25)
 		local currentState = ESP._G and ESP._G.ACAG
 		if currentState ~= lastState then
 			lastState = currentState
 
 			if currentState then
-				print("[ACAG] Enabled. Starting generator loop.")
+				print("[ACAG] Enabled.")
 				ran = false
+				isTriggered = false
 				task.spawn(function()
 					while ESP._G and ESP._G.ACAG and not ran do
 						local generator = waitForGenerator()
@@ -465,11 +480,11 @@ task.spawn(function()
 					end
 				end)
 			else
-				print("[ACAG] Disabled. Stopping generator loop.")
+				print("[ACAG] Disabled.")
 				ran = true
+				isTriggered = false
 			end
 		end
-		task.wait(0.25)
 	end
 end)
 
