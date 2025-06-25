@@ -445,22 +445,31 @@ function teleportAndInteract(generator)
 end
 
 task.spawn(function()
+	local lastState = false
 	while true do
-		if _G.ACAG then
-			ran = false
-		else
-			ran = true
-		end
+		local currentState = ESP._G and ESP._G.ACAG
+		if currentState ~= lastState then
+			lastState = currentState
 
-		if not ran then
-			local generator = waitForGenerator()
-			if generator then
+			if currentState then
+				print("[ACAG] Enabled. Starting generator loop.")
+				ran = false
+				task.spawn(function()
+					while ESP._G and ESP._G.ACAG and not ran do
+						local generator = waitForGenerator()
+						if generator then
+							ran = true
+							teleportAndInteract(generator)
+						end
+						task.wait(0.5)
+					end
+				end)
+			else
+				print("[ACAG] Disabled. Stopping generator loop.")
 				ran = true
-				teleportAndInteract(generator)
 			end
 		end
-
-		task.wait(1)
+		task.wait(0.25)
 	end
 end)
 
