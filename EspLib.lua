@@ -15,7 +15,8 @@ local KillersFolder = PlayersFolder:WaitForChild("Killers")
 -- GLOBAL STATE HOLDER
 --------------------------------------------------
 
-_G = rawget(_G, "_G") or {}
+local global = rawget(_G, "_G") or {}
+_G._G = global
 _G.FullBrightExecuted = _G.FullBrightExecuted or false
 _G.FullBrightEnabled = _G.FullBrightEnabled or false
 _G.AntiStun = _G.AntiStun or false
@@ -344,7 +345,7 @@ local isTriggered = false
 
 local function waitForGenerator()
 	while true do
-		if not ESP._G or not ESP._G.ACAG then return end
+		if not global.ACAG then return end
 		local map = workspace:FindFirstChild("Map")
 		local ingame = map and map:FindFirstChild("Ingame")
 		local nested = ingame and ingame:FindFirstChild("Map")
@@ -405,7 +406,7 @@ local function startRepairLoop(generator)
 	local center = generator:FindFirstChild("Positions") and generator.Positions:FindFirstChild("Center")
 
 	task.spawn(function()
-		while generator.Parent and ESP._G and ESP._G.ACAG do
+		while generator.Parent and global.ACAG do
 			local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 			if root and center and (root.Position - center.Position).Magnitude <= 10 then
 				if progress and progress.Value >= 78 then
@@ -462,7 +463,7 @@ task.spawn(function()
 	local lastState = false
 	while true do
 		task.wait(0.25)
-		local currentState = ESP._G and ESP._G.ACAG
+		local currentState = global.ACAG
 		if currentState ~= lastState then
 			lastState = currentState
 
@@ -471,7 +472,7 @@ task.spawn(function()
 				ran = false
 				isTriggered = false
 				task.spawn(function()
-					while ESP._G and ESP._G.ACAG and not ran do
+					while global.ACAG and not ran do
 						local generator = waitForGenerator()
 						if generator then
 							ran = true
@@ -497,5 +498,5 @@ return {
 	ESPConfig = ESPConfig,
 	setPopupEnabled = setPopupEnabled,
 	popupClickSpam = popupClickSpam,
-	_G = _G -- Access FullBright and AntiStun toggles
+	_G = global
 }
