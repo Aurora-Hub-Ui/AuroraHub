@@ -19,6 +19,7 @@ _G = rawget(_G, "_G") or {}
 _G.FullBrightExecuted = _G.FullBrightExecuted or false
 _G.FullBrightEnabled = _G.FullBrightEnabled or false
 _G.AntiStun = _G.AntiStun or false
+_G.ACAG = _G.ACAG or false
 
 --------------------------------------------------
 -- ESP SECTION
