@@ -409,7 +409,7 @@ local function startRepairLoop(generator)
 		while generator.Parent and global.ACAG do
 			local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 			if root and center and (root.Position - center.Position).Magnitude <= 10 then
-				if progress and progress.Value >= 78 then
+				if progress and progress.Value >= 80 then
 					local gui = generator:FindFirstChild("GUI")
 					if gui then gui:Destroy() end
 					generator:Destroy()
