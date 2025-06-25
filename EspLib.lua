@@ -172,7 +172,7 @@ task.spawn(function()
 end)
 
 --------------------------------------------------
--- POPUP SPAM SECTION
+-- POPUP SPAM SECTION (FIXED)
 --------------------------------------------------
 
 local popupLoop = false
@@ -196,15 +196,15 @@ end
 local function isSwordsNear()
 	local char = lp.Character
 	local hrp = char and char:FindFirstChild("HumanoidRootPart")
-	local swords = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame"):FindFirstChild("Swords")
+	local swords = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Swords")
 	return hrp and swords and swords:IsA("BasePart") and (hrp.Position - swords.Position).Magnitude <= 5
 end
 
 local function popupClickSpam()
-	local screenSize = Camera.ViewportSize
 	local spacing = 100
 	while popupLoop do
 		if isSwordsNear() then
+			local screenSize = Camera.ViewportSize
 			for y = 0, screenSize.Y, spacing do
 				for x = 0, screenSize.X, spacing do
 					if not popupLoop then return end
