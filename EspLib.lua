@@ -159,6 +159,7 @@ local function espAll()
 			    if gen.Name == "Generator" then
 			        local progress = gen:FindFirstChild("Progress")
 				if progress and progress:IsA("NumberValue") and progress.Value >= 78 then
+					attachNameTag(gen, " ")
 					continue -- skip this gen
 				end
 				attachNameTag(gen, "Generator")
