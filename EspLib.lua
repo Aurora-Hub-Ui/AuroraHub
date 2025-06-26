@@ -21,6 +21,8 @@ _G.FullBrightExecuted = _G.FullBrightExecuted or false
 _G.FullBrightEnabled = _G.FullBrightEnabled or false
 _G.AntiStun = _G.AntiStun or false
 _G.ACAG = _G.ACAG or false
+_G.ShowInstantFixGUI = _G.ShowInstantFixGUI or true
+_G.InstantFixCooldownSpeed = _G.InstantFixCooldownSpeed or 2
 
 --------------------------------------------------
 -- ESP SECTION
@@ -490,6 +492,113 @@ task.spawn(function()
 		end
 	end
 end)
+-- INSTANT FIX GUI + LOGIC
+
+local function createInstantFixGUI()
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "InstantFixUI"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.Parent = lp:WaitForChild("PlayerGui")
+
+	local button = Instance.new("TextButton")
+	button.Name = "InstantFixButton"
+	button.Size = UDim2.new(0, 120, 0, 40)
+	button.Position = UDim2.new(1, -160, 0, 60)
+	button.AnchorPoint = Vector2.new(0.5, 0.5)
+	button.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.GothamBold
+	button.TextScaled = true
+	button.Text = "Instant Fix"
+	button.BorderSizePixel = 0
+	button.Visible = _G.ShowInstantFixGUI
+	button.Parent = gui
+
+	Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
+	Instance.new("UIStroke", button).Thickness = 1.5
+
+	local isCooldown = false
+
+	local function findNearbyGenerator()
+		local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+		if not hrp then
+			warn("[InstantFix] ❌ No HumanoidRootPart.")
+			return nil
+		end
+
+		local map = workspace:FindFirstChild("Map")
+		local ingame = map and map:FindFirstChild("Ingame")
+		local nested = ingame and ingame:FindFirstChild("Map")
+		if not nested then return nil end
+
+		for _, gen in pairs(nested:GetChildren()) do
+			if gen.Name == "Generator" then
+				local pos = gen:FindFirstChild("Positions")
+				local center = pos and pos:FindFirstChild("Center")
+				if center and (hrp.Position - center.Position).Magnitude <= 10 then
+					print("[InstantFix] ✅ Found nearby generator:", gen:GetFullName())
+					return gen
+				end
+			end
+		end
+
+		warn("[InstantFix] ❌ No generator within 10 studs.")
+		return nil
+	end
+
+	local function repairGenerator(generator)
+		if not generator then return end
+		local remotes = generator:FindFirstChild("Remotes")
+		local remoteBE = remotes and remotes:FindFirstChild("BE")
+		local remoteRE = remotes and remotes:FindFirstChild("RE")
+		local progress = generator:FindFirstChild("Progress")
+
+		task.spawn(function()
+			if remoteBE then pcall(function() remoteBE:FireServer() end) end
+			if remoteRE then pcall(function() remoteRE:FireServer() end) end
+			print("[InstantFix] ✅ Repair signal sent.")
+			if progress then
+				print("[InstantFix] Generator progress:", progress.Value)
+			end
+		end)
+	end
+
+	button.MouseButton1Click:Connect(function()
+		if isCooldown then return end
+		isCooldown = true
+
+		local gen = findNearbyGenerator()
+		if gen then
+			repairGenerator(gen)
+		end
+
+		local cooldown = tonumber(_G.InstantFixCooldownSpeed) or 2
+		local t = cooldown
+		while t > 0 do
+			button.Text = string.format("%.1fs", t)
+			button.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+			task.wait(0.1)
+			t -= 0.1
+		end
+
+		button.Text = "Instant Fix"
+		button.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		isCooldown = false
+	end)
+
+	-- Visibility toggle
+	task.spawn(function()
+		while true do
+			task.wait(0.5)
+			pcall(function()
+				button.Visible = _G.ShowInstantFixGUI
+			end)
+		end
+	end)
+end
+
+createInstantFixGUI()
 
 --------------------------------------------------
 -- EXPORT MODULE
