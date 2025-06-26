@@ -523,7 +523,6 @@ local function createInstantFixGUI()
 	local function findNearbyGenerator()
 		local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 		if not hrp then
-			warn("[InstantFix] ❌ No HumanoidRootPart.")
 			return nil
 		end
 
@@ -537,13 +536,11 @@ local function createInstantFixGUI()
 				local pos = gen:FindFirstChild("Positions")
 				local center = pos and pos:FindFirstChild("Center")
 				if center and (hrp.Position - center.Position).Magnitude <= 10 then
-					print("[InstantFix] ✅ Found nearby generator:", gen:GetFullName())
 					return gen
 				end
 			end
 		end
 
-		warn("[InstantFix] ❌ No generator within 10 studs.")
 		return nil
 	end
 
@@ -557,10 +554,6 @@ local function createInstantFixGUI()
 		task.spawn(function()
 			if remoteBE then pcall(function() remoteBE:FireServer() end) end
 			if remoteRE then pcall(function() remoteRE:FireServer() end) end
-			print("[InstantFix] ✅ Repair signal sent.")
-			if progress then
-				print("[InstantFix] Generator progress:", progress.Value)
-			end
 		end)
 	end
 
