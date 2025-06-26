@@ -157,17 +157,29 @@ local function espAll()
 	            if folder then
 		        for _, gen in pairs(folder:GetChildren()) do
 			    if gen.Name == "Generator" then
-			        local progress = gen:FindFirstChild("Progress")
+				local progress = gen:FindFirstChild("Progress")
 				if progress and progress:IsA("NumberValue") and progress.Value >= 78 then
-					attachNameTag(gen, " ")
-					continue -- skip this gen
+					attachNameTag(gen, " ") -- make sure the tag exists
+
+					local tag = gen:FindFirstChild("ESPNameTag")
+					if tag then
+						local nameLabel = tag:FindFirstChild("NameLabel")
+						local hpLabel = tag:FindFirstChild("HPLabel")
+						local distLabel = tag:FindFirstChild("DistLabel")
+						if nameLabel then nameLabel.Text = " " end
+						if hpLabel then hpLabel.Text = " " end
+						if distLabel then distLabel.Text = " " end
+					end
+
+					continue -- skip updating this gen
 				end
+
 				attachNameTag(gen, "Generator")
 				updateTag(gen, Color3.fromRGB(255, 255, 0))
-			    end
-		        end
-	           end
-              end
+			     end
+		       end
+	          end
+             end
 	end
 end
 
