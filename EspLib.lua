@@ -153,16 +153,20 @@ local function espAll()
 			end
 		end
 		if ESPConfig.generators then
-			local folder = map:FindFirstChild("Map")
-			if folder then
-				for _, gen in pairs(folder:GetChildren()) do
-					if gen.Name == "Generator" then
-						attachNameTag(gen, "Generator")
-						updateTag(gen, Color3.fromRGB(255, 255, 0))
-					end
+	            local folder = map:FindFirstChild("Map")
+	            if folder then
+		        for _, gen in pairs(folder:GetChildren()) do
+			    if gen.Name == "Generator" then
+			        local progress = gen:FindFirstChild("Progress")
+				if progress and progress:IsA("NumberValue") and progress.Value >= 78 then
+					continue -- skip this gen
 				end
-			end
-		end
+				attachNameTag(gen, "Generator")
+				updateTag(gen, Color3.fromRGB(255, 255, 0))
+			    end
+		        end
+	           end
+              end
 	end
 end
 
