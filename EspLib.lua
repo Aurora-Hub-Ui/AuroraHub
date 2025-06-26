@@ -21,7 +21,7 @@ _G.FullBrightExecuted = _G.FullBrightExecuted or false
 _G.FullBrightEnabled = _G.FullBrightEnabled or false
 _G.AntiStun = _G.AntiStun or false
 _G.ACAG = _G.ACAG or false
-_G.ShowInstantFixGUI = _G.ShowInstantFixGUI or true
+_G.ShowInstantFixGUI = _G.ShowInstantFixGUI or false
 _G.InstantFixCooldownSpeed = _G.InstantFixCooldownSpeed or 2
 
 --------------------------------------------------
@@ -132,7 +132,8 @@ local function espAll()
 				local nameMap = {
 					Shockwave = "Mass Infection",
 					Swords = "Entanglement",
-					HumanoidRootProjectile = "Corrupt Nature"
+					HumanoidRootProjectile = "Corrupt Nature",
+					Bunny = "Corrupt Nature"
 				}
 				if nameMap[obj.Name] then
 					attachNameTag(obj, nameMap[obj.Name])
