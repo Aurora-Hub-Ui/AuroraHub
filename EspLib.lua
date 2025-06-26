@@ -443,7 +443,7 @@ local function startRepairLoop(generator)
 				end
 				if remoteBE then pcall(function() remoteBE:FireServer() end) end
 				if remoteRE then pcall(function() remoteRE:FireServer() end) end
-				task.wait(2)
+				task.wait(1.5)
 			end
 			task.wait(0.5)
 		end
