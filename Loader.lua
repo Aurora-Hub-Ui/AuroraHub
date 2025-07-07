@@ -1,6 +1,152 @@
 -- sneaky ass new anticheat pressure devs
-
 if getgenv().PressureBallsLoaded then return end
+getgenv().PressureBallsLoaded = true
+
+-- Cached services
+local Players = cloneref(game:GetService("Players"))
+local CoreGui = cloneref(game:GetService("CoreGui"))
+local Workspace = cloneref(game:GetService("Workspace"))
+local TextService = cloneref(game:GetService("TextService"))
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- UI Setup
+local ScreenGui = Instance.new("ScreenGui")
+local ttLabel = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+
+local function protectUI(sGui)
+	sGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+	sGui.DisplayOrder = 999999999
+	sGui.ResetOnSpawn = false
+	sGui.IgnoreGuiInset = true
+
+	local function hideName(inst)
+		if inst then
+			inst.Name = "\0"
+			inst.Archivable = false
+		end
+	end
+
+	if gethui then
+		hideName(sGui)
+		sGui.Parent = gethui()
+	elseif CoreGui:FindFirstChild("RobloxGui") then
+		hideName(sGui)
+		sGui.Parent = CoreGui.RobloxGui
+	else
+		hideName(sGui)
+		sGui.Parent = CoreGui
+	end
+end
+
+protectUI(ScreenGui)
+
+ttLabel.Name = "\0"
+ttLabel.Parent = ScreenGui
+ttLabel.BackgroundColor3 = Color3.fromRGB(4, 4, 4)
+ttLabel.BackgroundTransparency = 0.14
+ttLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+ttLabel.Position = UDim2.new(0.5, 0, 0.05, 0)
+ttLabel.Size = UDim2.new(0, 100, 0, 33)
+ttLabel.Font = Enum.Font.SourceSansBold
+ttLabel.Text = "God Mode (click)"
+ttLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ttLabel.TextSize = 20
+ttLabel.ZIndex = 9999
+UICorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = ttLabel
+
+ttLabel.Active = true
+ttLabel.Draggable = true
+
+-- Only one connection
+local isConnected = false
+
+local function removeKillables(eye)
+	if eye.Parent == Workspace:FindFirstChild("deathModel") then return end
+	local name = eye.Name:lower()
+	if (eye:IsA("BasePart") and name == "pandemonium") or name == "monsterlocker" then
+		task.defer(function()
+			if eye then eye:Destroy() end
+		end)
+	end
+end
+
+local debounce = false
+local function perform()
+	if debounce then return end
+	debounce = true
+
+	local char = LocalPlayer.Character
+	if not char then return end
+
+	local oldPos = char:GetPivot()
+	local foundLocker, enterFunction
+
+	for _, v in ipairs(Workspace:GetDescendants()) do
+		if v:IsA("Model") and v.Name:lower() == "locker" then
+			for _, obj in ipairs(v:GetDescendants()) do
+				if obj:IsA("RemoteFunction") and obj.Name:lower() == "enter" then
+					enterFunction = obj
+					foundLocker = v
+					break
+				end
+			end
+		end
+		if enterFunction then break end
+	end
+
+	if enterFunction and foundLocker then
+		for i = 1, 5 do
+			char:PivotTo(foundLocker:GetPivot())
+			pcall(function()
+				enterFunction:InvokeServer("true")
+			end)
+			task.wait(0.1)
+		end
+	end
+
+	char:PivotTo(oldPos)
+
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		pcall(function()
+			humanoid.WalkSpeed = 20
+		end)
+	end
+
+	local eBorder = PlayerGui:FindFirstChild("EntityBorder", true)
+	if eBorder then
+		eBorder:GetPropertyChangedSignal("Visible"):Connect(function()
+			if eBorder.Visible then eBorder.Visible = false end
+		end)
+	end
+
+	for _, obj in ipairs(Workspace:GetDescendants()) do
+		removeKillables(obj)
+	end
+
+	if not isConnected then
+		isConnected = true
+		Workspace.DescendantAdded:Connect(removeKillables)
+	end
+end
+
+-- Initialize UI just once
+local function initializeUI()
+	local txtlabel = ttLabel
+	local textWidth = TextService:GetTextSize(txtlabel.Text, txtlabel.TextSize, txtlabel.Font, Vector2.new(math.huge, math.huge)).X
+	local newSize = UDim2.new(0, textWidth + 69, 0, 33)
+	txtlabel:TweenSize(newSize, "Out", "Quint", 1, true)
+
+	txtlabel.MouseButton1Click:Connect(function()
+		task.spawn(perform)
+	end)
+end
+
+initializeUI()
+-[[if getgenv().PressureBallsLoaded then return end
 
 pcall(function() getgenv().PressureBallsLoaded = true end)
 
@@ -190,3 +336,4 @@ local function initializeUI()
 end
 
 coroutine.wrap(initializeUI)()
+]]
