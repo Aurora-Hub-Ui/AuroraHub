@@ -145,7 +145,8 @@ local function espAll()
 			for _, obj in pairs(map:GetChildren()) do
 				local nameMap = {
 					["1x1x1x1Zombie"] = "1x1x1x1 Zombie",
-					["PizzaDeliveryRig"] = "Pizza Delivery"
+					["PizzaDeliveryRig"] = "Pizza Delivery",
+					["Mafiaso3"] = "Debt Collector"
 				}
 				if nameMap[obj.Name] then
 					attachNameTag(obj, nameMap[obj.Name])
