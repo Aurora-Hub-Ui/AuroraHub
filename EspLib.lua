@@ -26,6 +26,9 @@ LocalPlayer.CharacterAdded:Connect(function(newChar)
 		hrp = newChar:WaitForChild("HumanoidRootPart")
 	end)
 end)
+local PlayersFolder = workspace:WaitForChild("Players")
+local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
+local KillersFolder = PlayersFolder:WaitForChild("Killers")
 
 --------------------------------------------------
 -- GLOBAL STATE HOLDER
