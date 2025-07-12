@@ -10,8 +10,11 @@ local Camera = workspace.CurrentCamera
 local PlayersFolder = workspace:WaitForChild("Players")
 local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
 local KillersFolder = PlayersFolder:WaitForChild("Killers")
-local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local hrp = char:WaitForChild("HumanoidRootPart")
+local success, err = pcall(function()
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+end)
+if not success then warn("[ESP ERROR]:", err) end
 LocalPlayer.CharacterAdded:Connect(function(newChar)
 	char = newChar
 	task.spawn(function()
