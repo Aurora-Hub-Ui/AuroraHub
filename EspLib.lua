@@ -121,6 +121,8 @@ end
 
 local function espAll()
 	local PlayersFolder = workspace:FindFirstChild("Players")
+	if not PlayersFolder then return end
+	
 	local SurvivorsFolder = PlayersFolder and PlayersFolder:FindFirstChild("Survivors")
 	local KillersFolder = PlayersFolder and PlayersFolder:FindFirstChild("Killers")
 	if ESPConfig.survivors then
@@ -208,7 +210,7 @@ end
 task.spawn(function()
 	while true do
 		task.wait(0.1)
-		espAll()
+		pcall(espAll)
 	end
 end)
 
