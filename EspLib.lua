@@ -26,9 +26,6 @@ LocalPlayer.CharacterAdded:Connect(function(newChar)
 		hrp = newChar:WaitForChild("HumanoidRootPart")
 	end)
 end)
-local PlayersFolder = workspace:WaitForChild("Players")
-local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
-local KillersFolder = PlayersFolder:WaitForChild("Killers")
 
 --------------------------------------------------
 -- GLOBAL STATE HOLDER
@@ -123,6 +120,9 @@ local function updateTag(model, defaultColor)
 end
 
 local function espAll()
+	local PlayersFolder = workspace:FindFirstChild("Players")
+	local SurvivorsFolder = PlayersFolder and PlayersFolder:FindFirstChild("Survivors")
+	local KillersFolder = PlayersFolder and PlayersFolder:FindFirstChild("Killers")
 	if ESPConfig.survivors then
 		for _, m in pairs(SurvivorsFolder:GetChildren()) do
 			attachNameTag(m, m.Name)
