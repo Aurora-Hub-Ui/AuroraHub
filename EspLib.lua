@@ -10,6 +10,14 @@ local Camera = workspace.CurrentCamera
 local PlayersFolder = workspace:WaitForChild("Players")
 local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
 local KillersFolder = PlayersFolder:WaitForChild("Killers")
+local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+	char = newChar
+	task.spawn(function()
+		hrp = newChar:WaitForChild("HumanoidRootPart")
+	end)
+end)
 
 --------------------------------------------------
 -- GLOBAL STATE HOLDER
