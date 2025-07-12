@@ -1,20 +1,25 @@
--- Combined ESP + PopupSpam + FullBright + AntiStun Module
-
--- Services
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local VIM = game:GetService("VirtualInputManager")
-local lp = Players.LocalPlayer
+
+-- 💥 Safe wait for LocalPlayer
+local lp = nil
+repeat
+	lp = Players.LocalPlayer
+	task.wait()
+until lp
+
 local LocalPlayer = lp
-local Camera = workspace.CurrentCamera
-local PlayersFolder = workspace:WaitForChild("Players")
-local SurvivorsFolder = PlayersFolder:WaitForChild("Survivors")
-local KillersFolder = PlayersFolder:WaitForChild("Killers")
-local success, err = pcall(function()
-    local char = lp.Character or lp.CharacterAdded:Wait()
-    local hrp = char:WaitForChild("HumanoidRootPart")
-end)
-if not success then warn("[ESP ERROR]:", err) end
+
+-- 💥 Safe wait for Character
+local char = lp.Character or lp.CharacterAdded:Wait()
+local hrp = nil
+repeat
+	hrp = char:FindFirstChild("HumanoidRootPart")
+	task.wait()
+until hrp
+
+-- Now it's safe to use
 LocalPlayer.CharacterAdded:Connect(function(newChar)
 	char = newChar
 	task.spawn(function()
