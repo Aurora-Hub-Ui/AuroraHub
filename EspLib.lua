@@ -117,10 +117,11 @@ local function espAll()
 		end
 	end
 
-	local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Ingame:FindFirstChild("Map")
+	local ittmap = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Ingame:FindFirstChild("Map")
+	local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
 	if map then
 		if ESPConfig.items then
-			for _, obj in pairs(map:GetChildren()) do
+			for _, obj in pairs(ittmap:GetChildren()) do
 				if obj.Name == "BloxyCola" or obj.Name == "Medkit" then
 					attachNameTag(obj, obj.Name)
 					updateTag(obj, Color3.fromRGB(255, 255, 255))
