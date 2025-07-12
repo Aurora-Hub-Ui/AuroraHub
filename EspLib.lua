@@ -187,7 +187,11 @@ local function espAll()
 
 				attachNameTag(gen, "Generator")
 				updateTag(gen, Color3.fromRGB(255, 255, 0))
-			     end
+				elseif gen.Name == "FakeGenerator" then
+				attachNameTag(gen, "Fake Generator")
+			        updateTag(gen, Color3.fromRGB(170, 0, 255)) -- purple
+				end
+			    end
 		       end
 	          end
              end
