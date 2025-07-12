@@ -121,10 +121,13 @@ end
 
 local function espAll()
 	local PlayersFolder = workspace:FindFirstChild("Players")
-	if not PlayersFolder then return end
-	
 	local SurvivorsFolder = PlayersFolder and PlayersFolder:FindFirstChild("Survivors")
 	local KillersFolder = PlayersFolder and PlayersFolder:FindFirstChild("Killers")
+
+	if not SurvivorsFolder or not KillersFolder then return end
+	if #SurvivorsFolder:GetChildren() == 0 and #KillersFolder:GetChildren() == 0 then
+	return -- nothing to ESP yet
+	end
 	if ESPConfig.survivors then
 		for _, m in pairs(SurvivorsFolder:GetChildren()) do
 			attachNameTag(m, m.Name)
