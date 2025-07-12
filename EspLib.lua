@@ -117,7 +117,7 @@ local function espAll()
 		end
 	end
 
-	local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+	local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Ingame:FindFirstChild("Map")
 	if map then
 		if ESPConfig.items then
 			for _, obj in pairs(map:GetChildren()) do
