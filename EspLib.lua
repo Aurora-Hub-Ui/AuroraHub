@@ -125,7 +125,7 @@ local function espAll()
 		end
 	end
 
-	local ittmap = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Ingame:FindFirstChild("Map")
+	local ittmap = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Map")
 	local map = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
 	if map then
 		if ESPConfig.items then
