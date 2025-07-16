@@ -455,6 +455,11 @@ local function startRepairLoop(generator)
 		while generator.Parent and global.ACAG do
 			local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 			if root and center and (root.Position - center.Position).Magnitude <= 10 then
+				if remoteBE then pcall(function() remoteBE:FireServer() end) end
+				if remoteRE then pcall(function() remoteRE:FireServer() end) end
+
+				task.wait(1.5)
+
 				if progress and progress.Value >= 80 then
 					local gui = generator:FindFirstChild("GUI")
 					if gui then gui:Destroy() end
@@ -467,15 +472,8 @@ local function startRepairLoop(generator)
 					end
 					break
 				end
-
-				if remoteBE then pcall(function() remoteBE:FireServer() end) end
-				if remoteRE then pcall(function() remoteRE:FireServer() end) end
-
-				-- cooldown only if it actually did interaction
-				task.wait(1.5)
-			else
-				task.wait(0.5)
 			end
+			task.wait(0.5)
 		end
 	end)
 end
