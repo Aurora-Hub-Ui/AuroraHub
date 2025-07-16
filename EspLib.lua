@@ -155,6 +155,7 @@ local function espAll()
 		if ESPConfig.projectiles then
 			for _, obj in pairs(map:GetChildren()) do
 				local nameMap = {
+					shockwave = "Mass Infection",
 					Shockwave = "Mass Infection",
 					Swords = "Entanglement",
 					HumanoidRootProjectile = "Corrupt Nature",
@@ -171,6 +172,9 @@ local function espAll()
 				local nameMap = {
 					["1x1x1x1Zombie"] = "1x1x1x1 Zombie",
 					["PizzaDeliveryRig"] = "Pizza Delivery",
+					["Builderman"] = "Pizza Delivery",
+					["Elliot"] = "Pizza Delivery",
+					["007n7"] = "Pizza Delivery",
 					["Mafiaso3"] = "Debt Collector"
 				}
 				if nameMap[obj.Name] then
