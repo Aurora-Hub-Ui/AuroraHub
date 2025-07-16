@@ -467,6 +467,43 @@ local function startRepairLoop(generator)
 					end
 					break
 				end
+
+				if remoteBE then pcall(function() remoteBE:FireServer() end) end
+				if remoteRE then pcall(function() remoteRE:FireServer() end) end
+
+				-- cooldown only if it actually did interaction
+				task.wait(1.5)
+			else
+				task.wait(0.5)
+			end
+		end
+	end)
+end
+--[[local function startRepairLoop(generator)
+	if not isTriggered then return end
+
+	local remotes = generator:FindFirstChild("Remotes")
+	local remoteBE = remotes and remotes:FindFirstChild("BE")
+	local remoteRE = remotes and remotes:FindFirstChild("RE")
+	local progress = generator:FindFirstChild("Progress")
+	local center = generator:FindFirstChild("Positions") and generator.Positions:FindFirstChild("Center")
+
+	task.spawn(function()
+		while generator.Parent and global.ACAG do
+			local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+			if root and center and (root.Position - center.Position).Magnitude <= 10 then
+				if progress and progress.Value >= 80 then
+					local gui = generator:FindFirstChild("GUI")
+					if gui then gui:Destroy() end
+					generator:Destroy()
+					isTriggered = false
+					task.wait(0.5)
+					local nextGen = waitForGenerator()
+					if nextGen then
+						teleportAndInteract(nextGen)
+					end
+					break
+				end
 				if remoteBE then pcall(function() remoteBE:FireServer() end) end
 				if remoteRE then pcall(function() remoteRE:FireServer() end) end
 				task.wait(1.5)
@@ -475,6 +512,7 @@ local function startRepairLoop(generator)
 		end
 	end)
 end
+]]
 
 function teleportAndInteract(generator)
 	if isTriggered then return end
