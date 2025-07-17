@@ -171,10 +171,10 @@ local function espAll()
 			for _, obj in pairs(map:GetChildren()) do
 				local nameMap = {
 					["1x1x1x1Zombie"] = "1x1x1x1 Zombie",
-					["PizzaDeliveryRig"] = "Pizza Delivery",
-					["Builderman"] = "Pizza Delivery",
-					["Elliot"] = "Pizza Delivery",
-					["007n7"] = "Pizza Delivery",
+					["PizzaDeliveryRig"] = "Minion",
+					["Builderman"] = "Minion",
+					["Elliot"] = "Minion",
+					["007n7"] = "Minion",
 					["Mafiaso3"] = "Debt Collector"
 				}
 				if nameMap[obj.Name] then
