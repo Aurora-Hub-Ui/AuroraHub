@@ -3,9 +3,10 @@
 	Rayfield Interface Suite
 	by Sirius
 
-	shlex | Designing + Programming
-	iRay  | Programming
-	Max   | Programming
+	shlex  | Designing + Programming
+	iRay   | Programming
+	Max    | Programming
+	Damian | Programming
 
 ]]
 
@@ -68,7 +69,7 @@ local function loadWithTimeout(url: string, timeout: number?): ...any
 	return if success then result else nil
 end
 
-local requestsDisabled = getgenv and getgenv().DISABLE_RAYFIELD_REQUESTS
+local requestsDisabled = true --getgenv and getgenv().DISABLE_RAYFIELD_REQUESTS
 local InterfaceBuild = '3K3W'
 local Release = "Build 1.68"
 local RayfieldFolder = "Rayfield"
@@ -198,6 +199,50 @@ if debugX then
 	warn('Settings Loaded')
 end
 
+local analyticsLib
+local sendReport = function(ev_n, sc_n) warn("Failed to load report function") end
+if not requestsDisabled then
+	if debugX then
+		warn('Querying Settings for Reporter Information')
+	end	
+	analyticsLib = loadWithTimeout("https://analytics.sirius.menu/script")
+	if not analyticsLib then
+		warn("Failed to load analytics reporter")
+		analyticsLib = nil
+	elseif analyticsLib and type(analyticsLib.load) == "function" then
+		analyticsLib:load()
+	else
+		warn("Analytics library loaded but missing load function")
+		analyticsLib = nil
+	end
+	sendReport = function(ev_n, sc_n)
+		if not (type(analyticsLib) == "table" and type(analyticsLib.isLoaded) == "function" and analyticsLib:isLoaded()) then
+			warn("Analytics library not loaded")
+			return
+		end
+		if useStudio then
+			print('Sending Analytics')
+		else
+			if debugX then warn('Reporting Analytics') end
+			analyticsLib:report(
+				{
+					["name"] = ev_n,
+					["script"] = {["name"] = sc_n, ["version"] = Release}
+				},
+				{
+					["version"] = InterfaceBuild
+				}
+			)
+			if debugX then warn('Finished Report') end
+		end
+	end
+	if cachedSettings and (#cachedSettings == 0 or (cachedSettings.System and cachedSettings.System.usageAnalytics and cachedSettings.System.usageAnalytics.Value)) then
+		sendReport("execution", "Rayfield")
+	elseif not cachedSettings then
+		sendReport("execution", "Rayfield")
+	end
+end
+
 local promptUser = math.random(1,6)
 
 if promptUser == 1 and prompt and type(prompt.create) == "function" then
@@ -212,62 +257,6 @@ if promptUser == 1 and prompt and type(prompt.create) == "function" then
 
 		end
 	)
-end
-
-local success, analyticsLib
-if not requestsDisabled then
-	if debugX then
-		warn('Querying Settings for Reporter Information')
-	end	local function safeLoadAnalyticsLib()
-		if not requestFunc then
-			return nil, "No request function available"
-		end
-		local req = requestFunc({ Url = "https://analytics.sirius.menu/script", Method = "GET" })
-		if not req or not req.Success then
-			return nil, "Failed to load analytics library: " .. (req and req.StatusCode or "No response")
-		end
-		if not loadstring or loadstring("return 2 + 2")() ~= 4 then
-			return nil, "loadstring is not available"
-		end
-		return loadstring(req.Body)()
-	end
-	success, analyticsLib = pcall(safeLoadAnalyticsLib)
-	if not success then
-		warn("Failed to load analytics reporter")
-		analyticsLib = nil
-	elseif analyticsLib and type(analyticsLib.load) == "function" then
-		analyticsLib:load()
-	else
-		warn("Analytics library loaded but missing load function")
-		analyticsLib = nil
-	end
-	local function sendReport()
-		if not (type(analyticsLib) == "table" and type(analyticsLib.isLoaded) == "function" and analyticsLib:isLoaded()) then
-
-			warn("Analytics library not loaded")
-			return
-		end
-		if useStudio then
-			print('Sending Analytics')
-		else
-			if debugX then warn('Reporting Analytics') end
-			analyticsLib:report(
-				{
-					["name"] = "execution",
-					["script"] = {["name"] = "Rayfield", ["version"] = Release}
-				},
-				{
-					["version"] = InterfaceBuild
-				}
-			)
-			if debugX then warn('Finished Report') end
-		end
-	end
-	if cachedSettings and (#cachedSettings == 0 or (cachedSettings.System and cachedSettings.System.usageAnalytics and cachedSettings.System.usageAnalytics.Value)) then
-		sendReport()
-	elseif not cachedSettings then
-		sendReport()
-	end
 end
 
 if debugX then
@@ -1615,6 +1604,10 @@ function RayfieldLibrary:CreateWindow(Settings)
 		makefolder(RayfieldFolder)
 	end
 
+	-- Attempt to report an event to analytics
+	if not requestsDisabled then
+		sendReport("window_created", Settings.Name or "Unknown")
+	end
 	local Passthrough = false
 	Topbar.Title.Text = Settings.Name
 
@@ -3549,7 +3542,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 		if not success then
 			RayfieldLibrary:Notify({Title = 'Unable to Change Theme', Content = 'We are unable find a theme on file.', Image = 4400704299})
 		else
-
 		end
 	end
 
@@ -3747,7 +3739,6 @@ function RayfieldLibrary:LoadConfiguration()
 		end)
 
 		if success and loaded and not notified then
-
 		elseif not success and not notified then
 			warn('Rayfield Configurations Error | '..tostring(result))
 			RayfieldLibrary:Notify({Title = "Rayfield Configurations", Content = "We've encountered an issue loading your configuration correctly.\n\nCheck the Developer Console for more information.", Image = 4384402990})
@@ -3981,9 +3972,9 @@ if CEnabled and Main:FindFirstChild('Notice') then
 	TweenService:Create(Main.Notice.Title, TweenInfo.new(0.5, Enum.EasingStyle.Exponential), {TextTransparency = 0.1}):Play()
 end
 
--- if not useStudio then
--- 	task.spawn(loadWithTimeout, "https://raw.githubusercontent.com/SiriusSoftwareLtd/Sirius/refs/heads/request/boost.lua")
--- end
+if not useStudio then
+	task.spawn(loadWithTimeout, "https://raw.githubusercontent.com/SiriusSoftwareLtd/Sirius/refs/heads/request/boost.lua")
+end
 
 task.delay(4, function()
 	RayfieldLibrary.LoadConfiguration()
