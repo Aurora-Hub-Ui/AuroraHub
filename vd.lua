@@ -124,7 +124,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -171,6 +171,7 @@ local RemoveClothingsToggle = false
 local AutoAimToggle = false
 local AutoDropToggle = false
 local AutoDropSetToggle = false
+local DamageAura = false
 
 local colors = {
     player = Color3.fromRGB(0, 255, 0),
@@ -1264,6 +1265,18 @@ InfThingsHandle = KillerSection:Toggle({
         end
     end
 })
+local OneTapHandle = KillerSection:Toggle({
+       Title = "Damage Aura",
+       Desc = "Throws cycles of hits at the location you're facing.",
+       Value = false,
+       Callback = function(state)
+             DamageAura = state
+             while DamageAura do
+                 task.wait(0.01)
+                 game.ReplicatedStorage.Remotes.Attacks.BasicAttack:FireServer()
+             end
+       end
+})
 local ExpandHandle = KillerSection:Toggle({
        Title = "Expand Survivors Hitboxes",
        Desc = "Expands survivors hitboxes so you could hit them far away.",
@@ -1411,6 +1424,124 @@ local AutoDropSetHandle = SurvDefSection:Toggle({
        Callback = function(state)
              AutoDropSetToggle = state
        end
+})
+SurvDefSection:Button({
+    Title = "Grab Nearest Player" .. (getTag(lp.Name) and "" or " (PREMIUM)"),
+    Callback = function()
+        local isPremium = false
+        for _, name in ipairs(premium_users) do
+            if lp.Name == name then
+                isPremium = true
+                break
+            end
+        end
+
+        if isPremium then
+            local nearestPlayer = nil
+            local shortestDistance = math.huge
+            
+            if not root then
+                WindUI:Notify({
+                    Title = "Error",
+                    Content = "Local character not found",
+                    Icon = "error",
+                    Duration = 3
+                })
+                return
+            end
+            
+            for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                if player ~= lp and player.Character then
+                    local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    if targetRoot then
+                        local distance = (root.Position - targetRoot.Position).Magnitude
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            nearestPlayer = player
+                        end
+                    end
+                end
+            end
+            
+            if nearestPlayer then
+                local args = { game:GetService("Players"):WaitForChild(nearestPlayer.Name).Character }
+                game.ReplicatedStorage.Remotes.Killers.Stalker.grab:FireServer(unpack(args))
+            else
+                WindUI:Notify({
+                    Title = "Error",
+                    Content = "No nearby players found",
+                    Icon = "error",
+                    Duration = 3
+                })
+            end
+        else
+            WindUI:Notify({
+                Title = "Premium Feature",
+                Content = "This feature is only for premium users, get premium in our discord server.",
+                Icon = "info",
+                Duration = 3
+            })
+        end
+    end
+})
+SurvDefSection:Button({
+    Title = "Carry Nearest Player" .. (getTag(lp.Name) and "" or " (PREMIUM)"),
+    Callback = function()
+        local isPremium = false
+        for _, name in ipairs(premium_users) do
+            if lp.Name == name then
+                isPremium = true
+                break
+            end
+        end
+
+        if isPremium then
+            local nearestPlayer = nil
+            local shortestDistance = math.huge
+            
+            if not root then
+                WindUI:Notify({
+                    Title = "Error",
+                    Content = "Local character not found",
+                    Icon = "error",
+                    Duration = 3
+                })
+                return
+            end
+            
+            for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                if player ~= lp and player.Character then
+                    local targetRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                    if targetRoot then
+                        local distance = (root.Position - targetRoot.Position).Magnitude
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            nearestPlayer = player
+                        end
+                    end
+                end
+            end
+            
+            if nearestPlayer then
+                local args = { game:GetService("Players"):WaitForChild(nearestPlayer.Name).Character }
+                game.ReplicatedStorage.Remotes.Carry.CarrySurvivorEvent:FireServer(unpack(args))
+            else
+                WindUI:Notify({
+                    Title = "Error",
+                    Content = "No nearby players found",
+                    Icon = "error",
+                    Duration = 3
+                })
+            end
+        else
+            WindUI:Notify({
+                Title = "Premium Feature",
+                Content = "This feature is only for premium users, get premium in our discord server.",
+                Icon = "info",
+                Duration = 3
+            })
+        end
+    end
 })
 
 local SurvMiscSection = TabHandles.Survivor:Section({ 
@@ -1702,6 +1833,7 @@ TabHandles.Config:Input({
             configFile:Register("AutoDropHandle", AutoDropHandle)
             configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
             configFile:Register("InfThingsHandle", InfThingsHandle)
+            configFile:Register("OneTapHandle", OneTapHandle)
             configFile:Register("ExpandHandle", ExpandHandle)
             configFile:Register("AntiSlowHandle", AntiSlowHandle)
             configFile:Register("GodModeHandle", GodModeHandle)
@@ -1739,6 +1871,7 @@ if ConfigManager then
     configFile:Register("AutoDropHandle", AutoDropHandle)
     configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
     configFile:Register("InfThingsHandle", InfThingsHandle)
+    configFile:Register("OneTapHandle", OneTapHandle)
     configFile:Register("ExpandHandle", ExpandHandle)
     configFile:Register("AntiSlowHandle", AntiSlowHandle)
     configFile:Register("GodModeHandle", GodModeHandle)
@@ -1788,6 +1921,7 @@ if ConfigManager then
                 configFile:Register("AutoDropHandle", AutoDropHandle)
                 configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
                 configFile:Register("InfThingsHandle", InfThingsHandle)
+                configFile:Register("OneTapHandle", OneTapHandle)
                 configFile:Register("ExpandHandle", ExpandHandle)
                 configFile:Register("AntiSlowHandle", AntiSlowHandle)
                 configFile:Register("GodModeHandle", GodModeHandle)
