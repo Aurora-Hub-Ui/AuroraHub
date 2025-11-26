@@ -9,7 +9,7 @@ local targetModels = {
     "Boatito Auratito", "Graipuss Medussi", "Squalanana", "Las Tralaleritas", "Extinct Tralalero",
     "Los Tralaleritos", "Zombie Tralala", "Tentacolo Tecnico", "Belula Beluga", "Granchiello Spiritell",
     "Crabbo Limonetta", "Los Orcalitos", "Orcalero Orcala", "Trippi Troppi Troppa Trippa", "Orcalita Orcala",
-    "Tralalita Tralala", "Tralalero Tralala", "Puffaball", "Blueberrini Octopusini", "Bananita Dolphinita", "Trippi Troppi", "Noobini Pizzanini", "Trulimero Trulichina"
+    "Tralalita Tralala", "Tralalero Tralala", "Puffaball", "Blueberrinni Octopusini", "Bananita Dolphinita", "Trippi Troppi", "Noobini Pizzanini", "Trulimero Trulichina"
 }
 
 task.spawn(function()
