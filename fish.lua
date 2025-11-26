@@ -50,8 +50,8 @@ task.spawn(function()
                                     end
                                 end
                                 
-                                if closestModel and closestDistance < 10 then
-                                    local claimRemote = ReplicatedStorage:FindFirstChild("Packages"):FindFirstChild("Net"):FindFirstChild("RE/PlotService/Sell")
+                                if closestModel and closestDistance < 5 then
+                                local claimRemote = ReplicatedStorage:FindFirstChild("Packages"):FindFirstChild("Net"):FindFirstChild("RE/PlotService/Sell")
                                     if claimRemote and claimRemote:IsA("RemoteEvent") then
                                         claimRemote:FireServer(tonumber(claim.Parent.Name))
                                     end
