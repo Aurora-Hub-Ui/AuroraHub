@@ -33,27 +33,22 @@ task.spawn(function()
                         for _, hitbox in pairs(animalPodiums:GetDescendants()) do
                             if hitbox:IsA("BasePart") and hitbox.Name == "Hitbox" and hitbox.Parent.Name == "Claim" then
                                 local claim = hitbox.Parent
-                                local closestModel = nil
-                                local closestDistance = math.huge
                                 
                                 for _, modelName in pairs(targetModels) do
                                     local model = baseModel:FindFirstChild(modelName)
                                     if model and model:IsA("Model") then
-                                        local rootPart = model:FindFirstChild("RootPart") or model:FindFirstChild("VfxInstance")
+                                        local rootPart = model:FindFirstChild("RootPart") or model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("VfxInstance")
                                         if rootPart then
                                             local distance = (hitbox.Position - rootPart.Position).Magnitude
-                                            if distance < closestDistance then
-                                                closestDistance = distance
-                                                closestModel = model
+                                            if distance < 8 then
+                                                local claimRemote = ReplicatedStorage:FindFirstChild("Packages"):FindFirstChild("Net"):FindFirstChild("RE/PlotService/Sell")
+                                                if claimRemote and claimRemote:IsA("RemoteEvent") then
+                                                    claimRemote:FireServer(tonumber(claim.Parent.Name))
+                                                    print("[DEBUG] Sold", modelName, "at claim", claim.Parent.Name, "Distance:", distance)
+                                                    break
+                                                end
                                             end
                                         end
-                                    end
-                                end
-                                
-                                if closestModel and closestDistance < 8 then
-                                local claimRemote = ReplicatedStorage:FindFirstChild("Packages"):FindFirstChild("Net"):FindFirstChild("RE/PlotService/Sell")
-                                    if claimRemote and claimRemote:IsA("RemoteEvent") then
-                                        claimRemote:FireServer(tonumber(claim.Parent.Name))
                                     end
                                 end
                             end
