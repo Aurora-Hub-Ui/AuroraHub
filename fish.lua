@@ -39,7 +39,7 @@ task.spawn(function()
                                 for _, modelName in pairs(targetModels) do
                                     local model = baseModel:FindFirstChild(modelName)
                                     if model and model:IsA("Model") then
-                                        local rootPart = model:FindFirstChild("RootPart") or model:FindFirstChild("HumanoidRootPart")
+                                        local rootPart = model:FindFirstChild("RootPart") or model:FindFirstChild("VfxInstance")
                                         if rootPart then
                                             local distance = (hitbox.Position - rootPart.Position).Magnitude
                                             if distance < closestDistance then
@@ -50,7 +50,7 @@ task.spawn(function()
                                     end
                                 end
                                 
-                                if closestModel and closestDistance < 5 then
+                                if closestModel and closestDistance < 8 then
                                 local claimRemote = ReplicatedStorage:FindFirstChild("Packages"):FindFirstChild("Net"):FindFirstChild("RE/PlotService/Sell")
                                     if claimRemote and claimRemote:IsA("RemoteEvent") then
                                         claimRemote:FireServer(tonumber(claim.Parent.Name))
