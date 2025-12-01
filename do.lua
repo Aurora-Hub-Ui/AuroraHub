@@ -156,7 +156,7 @@ local Tabs = {
 }
 
 local TabHandles = {
-     Main = Tabs.Features:Tab({ Title = "|  Main", Icon = "house" }),
+     Main = Tabs.Features:Tab({ Title = "|  Helper", Icon = "hammer" }),
      Esp = Tabs.Features:Tab({ Title = "|  ESP", Icon = "eye" }),
      Player = Tabs.Features:Tab({ Title = "|  Player", Icon = "users-round" }),
      Misc = Tabs.Features:Tab({ Title = "|  Misc", Icon = "layout-grid" }),
@@ -195,6 +195,7 @@ local names = {}
 local studs = {}
 local DrawingAvailable = (type(Drawing) == "table" or type(Drawing) == "userdata")
 local GhostToggle = false
+local AutoHideToggle = false
 
 local colors = {
     player = Color3.fromRGB(0, 255, 0),
@@ -223,9 +224,8 @@ local function isGhostObject(obj)
 end
 
 local function isItem(obj)
-    if obj:IsA("Model") and obj.Name == "Generator" then
-        local hitbox = obj:FindFirstChild("HitBox")
-        return hitbox and hitbox:IsA("BasePart")
+    if obj:IsA("BasePart") and obj.Name == "Handle" and obj.Parent.Parent.Name == "Items" then
+        return true
     end
     return false
 end
@@ -238,7 +238,7 @@ local function isHandprint(obj)
 end
 
 local function isOrb(obj)
-    if obj:IsA("BasePart") and obj.Parent and obj.Parent.Name == "GhostOrb" then
+    if obj:IsA("BasePart") and obj.Parent and obj.Parent.Name == "Workspace" then
         return true
     end
     return false
@@ -649,6 +649,65 @@ local function restoreOriginal()
     end
 end
 
+local toolRE = game.ReplicatedStorage.Events.RequestItemPickup
+local ItemsSection = TabHandles.Main:Section({ 
+    Title = "Items",
+    Icon = "pickaxe"
+})
+ItemsSection:Button({
+	Title = "Grab Video Camera",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("1"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Thermometer",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("2"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Spirit Book",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("3"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Blacklight",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("4"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Spirit Box",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("5"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab EMF Reader",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("6"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Flashlight",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("7"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Laser Projector",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("8"))
+	end
+})
+ItemsSection:Button({
+	Title = "Grab Flower Pot",
+	Callback = function()
+	      toolRE:FireServer(workspace:WaitForChild("Items"):WaitForChild("9"))
+	end
+})
 local GhostHandle = TabHandles.Main:Toggle({
     Title = "Visible Ghost",
     Desc = "Forces ghost to be fully visible so you could track him.",
@@ -656,6 +715,14 @@ local GhostHandle = TabHandles.Main:Toggle({
     Callback = function(state)
         if not state then restoreOriginal() end
         GhostToggle = state
+    end
+})
+local AutoHideHandle = TabHandles.Main:Toggle({
+    Title = "Auto Hide (Haunt)",
+    Desc = "Teleports you to Base Camp when Ghost starts haunting.",
+    Value = false,
+    Callback = function(state)
+        AutoHideToggle = state
     end
 })
 local orbparagraph = TabHandles.Main:Paragraph({
@@ -862,6 +929,7 @@ TabHandles.Config:Input({
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
             configFile:Register("GhostHandle", GhostHandle)
+            configFile:Register("AutoHideHandle", AutoHideHandle)
             configFile:Register("ESPDropdownHandle", ESPDropdownHandle)
             configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
             configFile:Register("ESPTracersHandle", ESPTracersHandle)
@@ -888,6 +956,7 @@ if ConfigManager then
     
     configFile = ConfigManager:CreateConfig(configName)
     configFile:Register("GhostHandle", GhostHandle)
+    configFile:Register("AutoHideHandle", AutoHideHandle)
     configFile:Register("ESPDropdownHandle", ESPDropdownHandle)
             configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
             configFile:Register("ESPTracersHandle", ESPTracersHandle)
@@ -923,6 +992,7 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("AutoHideHandle", AutoHideHandle)
                 configFile:Register("GhostHandle", GhostHandle)
                 configFile:Register("ESPDropdownHandle", ESPDropdownHandle)
             configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
@@ -1011,6 +1081,8 @@ task.spawn(function()
     end
 end)
 
+local lastDoorState = nil
+
 task.spawn(function()
     while task.wait(1) do
         local orb = workspace:FindFirstChild("GhostOrb")
@@ -1036,6 +1108,33 @@ task.spawn(function()
             handprintparagraph:SetDesc("Status: FOUND")
         else
             handprintparagraph:SetDesc("Status: NOT FOUND")
+        end
+        
+        if AutoHideToggle then
+            local exitDoor = workspace:FindFirstChild("Doors")
+            exitDoor = exitDoor and exitDoor:FindFirstChild("ExitDoor")
+            local isLocked = exitDoor and exitDoor:GetAttribute("Locked") or exitDoor and exitDoor:FindFirstChild("Locked")
+            
+            if exitDoor then
+                if lastDoorState == false and isLocked == true then
+                    local targetLocation = workspace:FindFirstChild("Map")
+                    targetLocation = targetLocation and targetLocation:FindFirstChild("Rooms")
+                    targetLocation = targetLocation and targetLocation:FindFirstChild("Base Camp")
+                    targetLocation = targetLocation and targetLocation:FindFirstChild("EnergyMonitorFeed")
+                    
+                    if targetLocation and targetLocation:IsA("BasePart") then
+                        local character = game.Players.LocalPlayer.Character
+                        if character and character:FindFirstChild("HumanoidRootPart") then
+                            character.HumanoidRootPart.CFrame = targetLocation.CFrame + Vector3.new(0, 5, 0)
+                        end
+                    end
+                end
+                lastDoorState = isLocked
+            else
+                lastDoorState = nil
+            end
+        else
+            lastDoorState = nil
         end
     end
 end)
