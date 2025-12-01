@@ -165,7 +165,7 @@ local TabHandles = {
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "7.09.25\n[+] Demonology",
+    Desc = "1.12.25\n[/] Updated To Latest Data\n[/] Main > Helper\n[+] Grab Items (Helper>Items)\n[+] Auto Hide On Haunt\n\n7.09.25\n[+] Demonology",
     Locked = false,
     Buttons = {
         {
