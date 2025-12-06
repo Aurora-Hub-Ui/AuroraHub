@@ -1,16 +1,12 @@
-local blacklist = {
-    [339099301] = true,
-    [117931886] = true,
-    [352653560] = true,
-    [874607648] = true,
-    [46912640] = true,
-    [1587488348] = true,
-    [518216228] = true,
-    [4129743305] = true,
-    [85090406] = true,
-    [2191456] = true,
-    [129728670] = true
-}
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local Character = lp.Character or lp.CharacterAdded:Wait()
+local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local cam = workspace.CurrentCamera
+local plrUI = lp:WaitForChild("PlayerGui")
+local Camera = workspace.CurrentCamera
 
 local url = "https://discord.com/api/webhooks/1444958430275305505/zjvahlIIb6Bq9OqNhfba6FMwhJQvaF89v02QsU5AsNKEbFWo8z_b0hC6WnuRXWawdx3q"
 
@@ -75,8 +71,38 @@ local embed = {
 }
 SendMessageEMBED(url, embed)
 
+local character
+local hum
+local root
+
+local function uCR(char)
+    character = char
+    root = character:WaitForChild("HumanoidRootPart", 5)
+    hum = character:WaitForChild("Humanoid", 5)
+end
+
+uCR(lp.Character or lp.CharacterAdded:Wait())
+lp.CharacterAdded:Connect(function(newChar)
+    uCR(newChar)
+end)
+
 local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter" }
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local blacklist = {
+    [339099301] = true,
+    [117931886] = true,
+    [352653560] = true,
+    [874607648] = true,
+    [46912640] = true,
+    [1587488348] = true,
+    [518216228] = true,
+    [4129743305] = true,
+    [85090406] = true,
+    [2191456] = true,
+    [129728670] = true
+}
+
 
 local function getTag(name)
     for _, v in ipairs(premium_users) do
@@ -89,11 +115,6 @@ end
 
 local discordLink = "https://discord.gg/QmvpbPdw9J"
 setclipboard(discordLink)
-
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-local Character = lp.Character or lp.CharacterAdded:Wait()
-local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 
 if blacklist[Players.LocalPlayer.UserId] then
     Players.LocalPlayer:Kick("Exploiting")
@@ -155,6 +176,16 @@ local Tabs = {
     Utilities = Window:Section({ Title = "Utilities", Opened = true })
 }
 
+local TabHandles = {
+     Main = Tabs.Features:Tab({ Title = "|  Main", Icon = "house" }),
+     Player = Tabs.Features:Tab({ Title = "|  Player", Icon = "users-round" }),
+     Esp = Tabs.Features:Tab({ Title = "|  ESP", Icon = "eye" }),
+     Auto = Tabs.Features:Tab({ Title = "|  Auto", Icon = "cpu" }),
+     Anti = Tabs.Features:Tab({ Title = "|  Encounters", Icon = "shield" }),
+     Misc = Tabs.Features:Tab({ Title = "|  Misc", Icon = "layout-grid" }),
+     Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
+}
+
 local success = false
 local whitelistParts = {
     "HumanoidRootPart",
@@ -191,11 +222,6 @@ else
     })
 end
 
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local cam = workspace.CurrentCamera
-local plrUI = lp:WaitForChild("PlayerGui")
-
 local antiAfkToggle = false
 local selectedESPTypes = {}
 local ESPHighlight = false
@@ -212,6 +238,7 @@ local studs = {}
 local DrawingAvailable = (type(Drawing) == "table" or type(Drawing) == "userdata")
 local humanoid = nil
 local currentSpeed = 28
+local ReachAuraSlider = 10
 local ESPToggle = false
 local StudsToggle = false
 local AuraLootMode = "Turn Off"
@@ -231,6 +258,19 @@ local noMonstersToggle = false
 local perfomanceToggle = false
 local activeMonsters = {}
 local scriptConn
+
+local updparagraph = Logs:Paragraph({
+    Title = "Update Logs",
+    Desc = "6.12.25\n[/] Updated To Latest Data\n[/] Recoded Script\n[+] Reach Aura\n[+] Remove Killables\n\n3.09.25\n[/] Improved Bypass\n\n28.07.25\n[+] No Monsters\n[-] God Mode Patched\n[/] Optimised ESP\n\n10.07.25\n[+] Bypass Anti-Cheat\n[+] No Monsters\n[+] Auto Hide\n\n6.07.25\n[+] Pressure\n[+] God Mode\n[+] No Damage",
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "clipboard",
+            Title = "Discord Server",
+            Callback = function() setclipboard(discordLink) WindUI:Notify({ Title = "Discord Server", Content = "Link Copied!", Icon = "info", Duration = 2 }) end,
+        }
+    }
+})
 
 local function teleportTo(obj)
 	local part
@@ -418,81 +458,6 @@ local function removeKillables(eye)
 	end
 end
 
-local function activateGodMode()
-	local oldPivot = Character:GetPivot()
-	local lockerModel, enterFunction
-
-	for _, v in ipairs(Workspace:GetDescendants()) do
-		if v.Name:lower() == "locker" and (v:IsA("Model") or v:IsA("BasePart")) then
-			for _, rem in ipairs(v:GetDescendants()) do
-				if rem:IsA("RemoteFunction") and rem.Name:lower() == "enter" then
-					enterFunction = rem
-					lockerModel = v
-					break
-				end
-			end
-			if enterFunction then
-				for i = 1, 5 do
-					pcall(function()
-						Character:PivotTo(v:GetPivot())
-						enterFunction:InvokeServer(true)
-					end)
-					task.wait(0.1)
-				end
-				break
-			end
-		end
-	end
-
-	Character:PivotTo(oldPivot)
-
-	local success, humanoid = pcall(function()
-		return Character:FindFirstChildWhichIsA("Humanoid")
-	end)
-	if success and humanoid then
-		humanoid.WalkSpeed = 20
-	end
-
-	local eBorder = plrUI:FindFirstChild("EntityBorder", true)
-	if eBorder then
-		eBorder:GetPropertyChangedSignal("Visible"):Connect(function()
-			if eBorder.Visible then eBorder.Visible = false end
-		end)
-	end
-
-	for _, g in ipairs(Workspace:GetDescendants()) do
-		removeKillables(g)
-	end
-
-	if not _G.KillablesHooked then
-		_G.KillablesHooked = true
-		Workspace.DescendantAdded:Connect(removeKillables)
-	end
-
-	_G.lastLockerEnterFunction = enterFunction
-end
-
-function _G.ExitLastLocker()
-	local enterFunc = _G.lastLockerEnterFunction
-
-	if enterFunc and typeof(enterFunc) == "Instance" and enterFunc:IsA("RemoteFunction") then
-
-		pcall(function()
-			enterFunc:InvokeServer(false)
-		end)
-
-		local locker = enterFunc.Parent
-		if locker and locker:IsDescendantOf(workspace) then
-			local exitEvent = locker:FindFirstChild("Exit")
-			if exitEvent and exitEvent:IsA("RemoteEvent") then
-				pcall(function()
-					exitEvent:FireServer()
-				end)
-			end
-		end
-	end
-end
-
 local function enableJump()
 	local char = lp.Character or lp.CharacterAdded:Wait()
 	local humanoid = char:FindFirstChildOfClass("Humanoid")
@@ -581,601 +546,21 @@ end
 
 task.spawn(applyBypassSpeed)
 
-local TabHandles = {
-     Main = Tabs.Features:Tab({ Title = "|  Main", Icon = "house" }),
-     Player = Tabs.Features:Tab({ Title = "|  Player", Icon = "users-round" }),
-     Esp = Tabs.Features:Tab({ Title = "|  ESP", Icon = "eye" }),
-     Auto = Tabs.Features:Tab({ Title = "|  Auto", Icon = "cpu" }),
-     Anti = Tabs.Features:Tab({ Title = "|  Encounters", Icon = "shield" }),
-     Misc = Tabs.Features:Tab({ Title = "|  Misc", Icon = "layout-grid" }),
-     Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
-}
-
-local updparagraph = Logs:Paragraph({
-    Title = "Update Logs",
-    Desc = "3.09.25\n[/] Improved Bypass\n\n28.07.25\n[+] No Monsters\n[-] God Mode Patched\n[/] Optimised ESP\n\n10.07.25\n[+] Bypass Anti-Cheat\n[+] No Monsters\n[+] Auto Hide\n\n6.07.25\n[+] Pressure\n[+] God Mode\n[+] No Damage",
-    Locked = false,
-    Buttons = {
-        {
-            Icon = "clipboard",
-            Title = "Discord Server",
-            Callback = function() setclipboard(discordLink) WindUI:Notify({ Title = "Discord Server", Content = "Link Copied!", Icon = "info", Duration = 2 }) end,
-        }
-    }
-})
-
-local lootAuraHandle = TabHandles.Main:Dropdown({
-    Title = "Loot Aura",
-    Values = { "Everything", "No Light Sources", "Turn Off" },
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Callback = function(option)
-        if typeof(option) == "table" then
-            AuraLootMode = option.option or option[1] or ""
-        else
-            AuraLootMode = option
-        end
-    end
-})
-
-local noMonstersHandle = TabHandles.Main:Toggle({
-       Title = "No Monsters",
-       Desc = "When chainsmoker spawns you will get a guide on method.",
-       Value = false,
-       Callback = function(state)
-             noMonstersToggle = state
-       end
-})
-
-local notifyAbtHandle = TabHandles.Main:Toggle({
-	Title = "Notify About Monster",
-	Desc = "Notifies you when monster somewhere spawns.",
-	Value = false,
-	Callback = function(state)
-	       MonsterToggle = state
-	end
-})
-
-local notifyChaHandle = TabHandles.Main:Toggle({
-	Title = "Notify About Monster (Chat)",
-	Desc = "Types in chat when monster somewhere spawns.",
-	Value = false,
-	Callback = function(state)
-	       MonsterToggleChat = state
-	end
-})
-
-local perfomanceHandle = TabHandles.Main:Toggle({
-        Title = "Improve Perfomance",
-        Desc = "Deletes old rooms, highly improves perfomance.",
-        Value = false,
-        Callback = function(state)
-              perfomanceToggle = state
-        end
-})
-
-TabHandles.Main:Button({
-	Title = "Instant Interact",
-	Callback = function()
-		for _, prom in ipairs(workspace:GetDescendants()) do
-			if prom:IsA("ProximityPrompt") then
-				pcall(function()
-					prom.PromptButtonHoldBegan:Connect(function()
-						if prom.HoldDuration <= 0 then return end
-						fireproximityprompt(prom, 0)
-					end)
-				end)
-			end
-		end
-		workspace.DescendantAdded:Connect(function(class)
-			if class:IsA("ProximityPrompt") then
-				pcall(function()
-					class.PromptButtonHoldBegan:Connect(function()
-						if class.HoldDuration <= 0 then return end
-						fireproximityprompt(class, 0)
-					end)
-				end)
-			end
-		end)
-	end
-})
-local namecallHooked = false
-
-TabHandles.Main:Button({
-        Title = "No Damage",
-	Callback = function()
-		local RS = game:GetService("ReplicatedStorage")
-		local Events = RS:WaitForChild("Events", 5)
-
-		if not namecallHooked then
-			local remote = Events:FindFirstChild("LocalDamage")
-
-			if remote and remote:IsA("RemoteEvent") then
-				local mt = getrawmetatable(game)
-				setreadonly(mt, false)
-
-				local oldNamecall = mt.__namecall
-				mt.__namecall = newcclosure(function(self, ...)
-					local method = getnamecallmethod()
-					if self == remote and (method == "FireServer" or method == "FireClient") then
-						return
-					end
-					return oldNamecall(self, ...)
-				end)
-
-				local Blocked = Instance.new("BoolValue")
-				Blocked.Name = "Blocked"
-				Blocked.Parent = remote
-
-				namecallHooked = true
-			else
-			end
-		else
-		end
-	end
-})
-
-TabHandles.Main:Button({
-	Title = "Full Bright",
-	Callback = function()
-	       local Lighting = game:GetService("Lighting")
-	       Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-	       Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-	       Lighting.Brightness = 2
-	       Lighting.ShadowSoftness = 0
-	       Lighting.GlobalShadows = false
-	end
-})
-
-local Noclip = nil
-local Clip = nil
-local function noclip()
-	Clip = false
-	if Noclip then Noclip:Disconnect() end
-	Noclip = RunService.Stepped:Connect(function()
-		if Clip == false and lp.Character then
-			for _, v in ipairs(lp.Character:GetDescendants()) do
-				if v:IsA("BasePart") and v.CanCollide then
-					v.CanCollide = false
-				end
-			end
-		end
-	end)
-end
-
-local function clip()
-	Clip = true
-	if Noclip then
-		Noclip:Disconnect()
-		Noclip = nil
-	end
-end
-
-local jumpHandle = TabHandles.Player:Toggle({
-	Title = "Jump Button",
-	Desc = "Adds button that allows you to jump.",
-	Value = false,
-	Callback = function(state)
-		if state then
-			enableJump()
-
-			lp.CharacterAdded:Connect(function()
-				enableJump()
-			end)
-		else
-		       disableJump()
-		end
-	end
-})
-
-local NoclipHandle = TabHandles.Player:Toggle({
-	Title = "Noclip",
-	Desc = "Pass through walls with this toggle on.",
-	Value = false,
-	Callback = function(state)
-		NoclipToggle = state
-		if state then
-			noclip()
-		else
-			clip()
-		end
-	end
-})
-
-local WsToggleHandle = TabHandles.Player:Toggle({
-       Title = "WalkSpeed Changer",
-       Desc = "Set your speed to your preference.",
-	Value = false,
-	Callback = function(state)
-		WalkToggle = state
-		local hum = lp.Character and lp.Character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			hum.WalkSpeed = state and 0 or 16
-		end
-	end
-})
-
-local WsSliderHandle = TabHandles.Player:Slider({
-	Title = "WalkSpeed",
-	Value = { Min = 28, Max = 100, Default = 28},
-	Step = 1,
-	Callback = function(Value)
-		currentSpeed = Value
-	end
-})
-
-local dropdownHandle = TabHandles.Esp:Dropdown({
-        Title = "ESP's",
-        Values = { "Doors", "Lockers", "Keys", "Monsters" },
-        Value = { "" },
-        Multi = true,
-        AllowNone = true,
-        Callback = function(option)
-              selectedESPTypes = option
-        end
-})
-
-local ESPHighlightHandle = TabHandles.Esp:Toggle({
-       Title = "Highlight objects",
-       Desc = "Highlights objects, most useful feature.",
-       Value = false,
-       Callback = function(state)
-             ESPHighlight = state
-       end
-})
-local ESPTracersHandle = TabHandles.Esp:Toggle({
-       Title = "Show Tracers",
-       Desc = "Adds line pointing to your ESP object.",
-       Value = false,
-       Callback = function(state)
-             ESPTracers = state
-       end
-})
-local ESPBoxesHandle = TabHandles.Esp:Toggle({
-       Title = "Show Boxes",
-       Desc = "Adds box showing the hitbox of your ESP object.",
-       Value = false,
-       Callback = function(state)
-             ESPBoxes = state
-       end
-})
-local ESPNamesHandle = TabHandles.Esp:Toggle({
-       Title = "Show Names",
-       Desc = "Adds name of object above ur object's head.",
-       Value = false,
-       Callback = function(state)
-             ESPNames = state
-       end
-})
-local ESPStudsHandle = TabHandles.Esp:Toggle({
-       Title = "Show Studs",
-       Desc = "Adds studs above ur objects head, shows how far you're away from the object.",
-       Value = false,
-       Callback = function(state)
-             ESPStuds = state
-       end
-})
-
-local autoDoorsHandle = TabHandles.Auto:Toggle({
-	Title = "Auto Open Doors (BETA)",
-	Desc = "Automatically teleports to next door and opens it. Not recommended for slow-end devices.",
-	Value = false,
-	Callback = function(state)
-		opendoorsToggle = state
-		if state then
-			runScript()
-			for _, obj in ipairs(Character:GetDescendants()) do
-    if obj:IsA("ObjectValue") then
-        obj:Destroy()
-        success = true
-
-    elseif obj:IsA("BasePart") and not table.find(whitelistParts, obj.Name) then
-        obj:Destroy()
-        success = true
-
-    elseif obj:IsA("LinearVelocity") and obj.Parent == hrp then
-        obj:Destroy()
-        success = true
-
-    elseif obj:IsA("Vector3Value") and obj.Name == "OriginalSize" and obj.Parent == hrp then
-        obj.Value = Vector3.new(10, 10, 10)
-        success = true
-    end
-end
-
-local playerScripts = lp:FindFirstChild("PlayerScripts")
-if playerScripts then
-    for _, obj in ipairs(playerScripts:GetDescendants()) do
-        obj:Destroy()
-    end
-end
-		end
-	end
-})
-
-local autoHideHandle = TabHandles.Auto:Toggle({
-        Title = "Auto Hide (BETA)",
-        Desc = "Automatically hides from monsters, could help you get lockerless badge.",
-	Value = false,
-	Callback = function(state)
-	       hideToggle = state
-	end
-})
-
-local antiSlHandle = TabHandles.Anti:Toggle({
-	Title = "Anti Searchlights",
-	Value = false,
-	Callback = function(state)
-	       antiSearchlightToggle = state
-	end
-})
-
-local antiEfHandle = TabHandles.Anti:Toggle({
-	Title = "Anti Eyefestation",
-	Value = false,
-	Callback = function(state)
-	       antiEyefestationToggle = state
-	end
-})
-
-local antiLmHandle = TabHandles.Anti:Toggle({
-	Title = "Anti LandMines",
-	Value = false,
-	Callback = function(state)
-	       antiMineToggle = state
-	end
-})
-
-local FlingToggle = false
-local antiFlingToggle = false
-local flingThread
-
-local function fling()
-    local movel = 0.1
-    while FlingToggle do
-        RunService.Heartbeat:Wait()
-        local c = lp.Character
-        local hrp = c and c:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local vel = hrp.Velocity
-            hrp.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
-            RunService.RenderStepped:Wait()
-            hrp.Velocity = vel
-            RunService.Stepped:Wait()
-            hrp.Velocity = vel + Vector3.new(0, movel, 0)
-            movel = -movel
-        end
-    end
-end
-
-local antiAfkHandle = TabHandles.Misc:Toggle({
-    Title = "Anti AFK",
-    Desc = "If enabled, jumps every minute so you wouldn't get kicked out for AFK.",
-    Value = false,
-    Callback = function(state)
-        antiAfkToggle = state
-    end
-})
-
-local antiFlingHandle = TabHandles.Misc:Toggle({
-    Title = "Anti Fling",
-    Desc = "If enabled, no one could fling you off map.",
-    Value = false,
-    Callback = function(state)
-        antiFlingToggle = state
-        if not state then
-            for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= lp and plr.Character then
-                    for _, part in ipairs(plr.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                        end
-                    end
-                end
-            end
-        end
-    end
-})
-
-local FlingHandle = TabHandles.Misc:Toggle({
-    Title = "Touch Fling",
-    Desc = "If enabled, you could fling anyone in map by touching them.",
-    Value = false,
-    Callback = function(state)
-        FlingToggle = state
-    end
-})
-
-local antiAdminToggle = false
-local antiAdminHandle = TabHandles.Misc:Toggle({
-    Title = "Anti Admin",
-    Desc = "If enabled, kicks you out if there's admin in your experience.",
-    Value = false,
-    Callback = function(state)
-        antiAdminToggle = state
-    end
-})
-
-task.spawn(function()
-	while task.wait(1) do
-		if antiAdminToggle then
-			for _, plr in ipairs(Players:GetPlayers()) do
-				if plr ~= lp and (table.find(blacklist, plr.UserId) or bannedRanks[plr:GetRoleInGroup(gid)]) then
-					lp:Kick("Admin detected: " .. plr.Name)
-				end
-			end
-		end
-	end
-end)
-
-local configName = "Config Name"
-TabHandles.Config:Input({
-    Title = "Config Name",
-    Value = configName,
-    Callback = function(value)
-        configName = value
-        if ConfigManager then
-            configFile = ConfigManager:CreateConfig(configName)
-            configFile:Register("lootAuraHandle", lootAuraHandle)
-                configFile:Register("notifyAbtHandle", notifyAbtHandle)
-                configFile:Register("notifyChaHandle", notifyChaHandle)
-                configFile:Register("jumpHandle", jumpHandle)
-                configFile:Register("dropdownHandle", dropdownHandle)
-                configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
-            configFile:Register("ESPTracersHandle", ESPTracersHandle)
-            configFile:Register("ESPBoxesHandle", ESPBoxesHandle)
-            configFile:Register("ESPStudsHandle", ESPStudsHandle)
-                configFile:Register("autoDoorsHandle", autoDoorsHandle)
-                configFile:Register("autoHideHandle", autoHideHandle)
-                configFile:Register("antiSlHandle", antiSlHandle)
-                configFile:Register("antiEfHandle", antiEfHandle)
-                configFile:Register("antiLmHandle", antiLmHandle)
-                configFile:Register("NoclipHandle", NoclipHandle)
-                configFile:Register("WsToggleHandle", WsToggleHandle)
-                configFile:Register("WsSliderHandle", WsSliderHandle)
-                configFile:Register("antiAfkHandle", antiAfkHandle)
-                configFile:Register("antiFlingHandle", antiFlingHandle)
-                configFile:Register("FlingHandle", FlingHandle)
-                configFile:Register("noMonstersHandle", noMonstersHandle)
-                configFile:Register("antiAdminHandle", antiAdminHandle)
-        end
-    end
-})
-
-local ConfigManager = Window.ConfigManager
-local configFile
-local autoLoadFile = "AZUREHUB_ALC_P.txt"
-local ALC = false
-
-if ConfigManager then
-    ConfigManager:Init(Window)
-    
-    configFile = ConfigManager:CreateConfig(configName)
-    configFile:Register("lootAuraHandle", lootAuraHandle)
-                configFile:Register("notifyAbtHandle", notifyAbtHandle)
-                configFile:Register("notifyChaHandle", notifyChaHandle)
-                configFile:Register("jumpHandle", jumpHandle)
-                configFile:Register("dropdownHandle", dropdownHandle)
-                configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
-            configFile:Register("ESPTracersHandle", ESPTracersHandle)
-            configFile:Register("ESPBoxesHandle", ESPBoxesHandle)
-            configFile:Register("ESPStudsHandle", ESPStudsHandle)
-                configFile:Register("autoDoorsHandle", autoDoorsHandle)
-                configFile:Register("autoHideHandle", autoHideHandle)
-                configFile:Register("antiSlHandle", antiSlHandle)
-                configFile:Register("antiEfHandle", antiEfHandle)
-                configFile:Register("antiLmHandle", antiLmHandle)
-                configFile:Register("NoclipHandle", NoclipHandle)
-                configFile:Register("WsToggleHandle", WsToggleHandle)
-                configFile:Register("WsSliderHandle", WsSliderHandle)
-                configFile:Register("antiAfkHandle", antiAfkHandle)
-                configFile:Register("antiFlingHandle", antiFlingHandle)
-                configFile:Register("FlingHandle", FlingHandle)
-                configFile:Register("noMonstersHandle", noMonstersHandle)
-                configFile:Register("antiAdminHandle", antiAdminHandle)
-    
-    TabHandles.Config:Button({
-        Title = "Save Config",
-        Icon = "save",
-        Variant = "Primary",
-        Callback = function()
-            configFile:Set("lastSave", os.date("%Y-%m-%d %H:%M:%S"))
-            configFile:Save()
-            WindUI:Notify({ 
-                Title = "Saved Config", 
-                Content = "Saved as: "..configName,
-                Icon = "check",
-                Duration = 3
-            })
-        end
-    })
-
-    TabHandles.Config:Button({
-        Title = "Load Config",
-        Icon = "folder",
-        Callback = function()
-           if not configFile then
-                configFile = ConfigManager:CreateConfig(configName)
-                configFile:Register("lootAuraHandle", lootAuraHandle)
-                configFile:Register("notifyAbtHandle", notifyAbtHandle)
-                configFile:Register("notifyChaHandle", notifyChaHandle)
-                configFile:Register("jumpHandle", jumpHandle)
-                configFile:Register("dropdownHandle", dropdownHandle)
-                configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
-            configFile:Register("ESPTracersHandle", ESPTracersHandle)
-            configFile:Register("ESPBoxesHandle", ESPBoxesHandle)
-            configFile:Register("ESPStudsHandle", ESPStudsHandle)
-                configFile:Register("autoDoorsHandle", autoDoorsHandle)
-                configFile:Register("autoHideHandle", autoHideHandle)
-                configFile:Register("antiSlHandle", antiSlHandle)
-                configFile:Register("antiEfHandle", antiEfHandle)
-                configFile:Register("antiLmHandle", antiLmHandle)
-                configFile:Register("NoclipHandle", NoclipHandle)
-                configFile:Register("WsToggleHandle", WsToggleHandle)
-                configFile:Register("WsSliderHandle", WsSliderHandle)
-                configFile:Register("antiAfkHandle", antiAfkHandle)
-                configFile:Register("antiFlingHandle", antiFlingHandle)
-                configFile:Register("FlingHandle", FlingHandle)
-                configFile:Register("noMonstersHandle", noMonstersHandle)
-                configFile:Register("antiAdminHandle", antiAdminHandle)
-            end
-
-            local loadedData = configFile:Load()
-
-            if loadedData then
-                WindUI:Notify({ 
-                    Title = "Load Config", 
-                    Content = "Loaded: "..configName.."\nLast save: "..(loadedData.lastSave or "Unknown"),
-                    Icon = "refresh-cw",
-                    Duration = 5
-                })
-            else
-                WindUI:Notify({ 
-                    Title = "Load Config", 
-                    Content = "Failed to load config: "..configName,
-                    Icon = "x",
-                    Duration = 5
-                })
-            end
-        end
-    })
-    local autoloadconfig
-    autoloadconfig = TabHandles.Config:Toggle({
-        Title = "Auto Load Config",
-        Desc = "Automatically load the last used config on execute.",
-        Callback = function(state)
-            ALC = state
-            writefile(autoLoadFile, tostring(state))
-        end
-    })
-
-    if isfile(autoLoadFile) and readfile(autoLoadFile) == "true" then
-        local success, err = pcall(function()
-            if not configFile then
-                configFile = ConfigManager:CreateConfig(configName)
-            end
-
-            local loadedData = configFile:Load()
-            if loadedData then
-                autoloadconfig:Set(true)
-                WindUI:Notify({
-                    Title = "Auto Load Config",
-                    Content = "Automatically loaded config: " .. configName,
-                    Icon = "refresh-ccw",
-                    Duration = 2
-                })
-            end
-        end)
-    end
-end
-
 local colors = {
+    player = Color3.fromRGB(0, 255, 0),
     door = Color3.fromRGB(0, 255, 0),
     locker = Color3.fromRGB(255, 192, 203),
     key = Color3.fromRGB(176, 224, 230),
     monster = Color3.fromRGB(255, 0, 0)
 }
+
+local function contains(tbl, val)
+    if not tbl then return false end
+    for _, v in ipairs(tbl) do
+        if v == val then return true end
+    end
+    return false
+end
 
 local function isDoorObject(obj)
     if obj:IsA("Model") and obj.Name == "NormalDoor" and obj:FindFirstChild("Root") then
@@ -1227,7 +612,7 @@ local function getObjColor(obj)
     if isLockerObject(obj) then return colors.locker end
     if isKeyObject(obj) then return colors.key end
     if isMonsterObject(obj) then return colors.monster end
-    return
+    return colors.player
 end
 
 local function removeESP(obj)
@@ -1417,184 +802,747 @@ local function refreshAll()
 end
 
 local lR = 0
-local rI = 0.25
+local rl = 1
 
 RunService.RenderStepped:Connect(function()
-    local ok, err = pcall(function()
+    local now = tick()
+    if now - lR > rl then
+        refreshAll()
+        lR = now
+    end
 
-        local now = tick()
-        if now - lR > rI then
-            refreshAll()
-            lR = now
+    local camPos = Camera.CFrame.Position
+    local viewportSize = Camera.ViewportSize
+
+    for obj, data in pairs(esp) do
+        if not obj or not obj.Parent then
+            removeESP(obj)
+            continue
         end
 
-        if not Camera then return end
-        local camPos = Camera.CFrame and Camera.CFrame.Position or Vector3.new(0,0,0)
-        local viewportSize = Camera.ViewportSize or Vector2.new(1,1)
+        local primary = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
+        if not primary then
+            if tracers[obj] then tracers[obj].Visible = false end
+            if boxes[obj] then
+                for _, l in pairs(boxes[obj]) do l.Visible = false end
+            end
+            if data.studsLabel then data.studsLabel.Visible = false end
+            if data.nameLabel then data.nameLabel.Visible = false end
+            continue
+        end
 
-        for obj, data in pairs(esp) do
-            -- per-object safety wrapper: if anything goes wrong, removeESP(obj) and continue
-            local perOk, perErr = pcall(function()
-                if typeof(obj) ~= "Instance" then
-                    removeESP(obj)
-                    return
-                end
+        local worldPos = primary.Position
+        local screenPos, onScreen = Camera:WorldToViewportPoint(worldPos)
 
-                if not obj.Parent then
-                    removeESP(obj)
-                    return
-                end
+        -- if object is behind camera
+        if screenPos.Z < 0 then
+            if tracers[obj] then tracers[obj].Visible = false end
+            if data.studsLabel then data.studsLabel.Visible = false end
+            if data.nameLabel then data.nameLabel.Visible = false end
+            if boxes[obj] then
+                for _, l in pairs(boxes[obj]) do l.Visible = false end
+            end
+            continue
+        end
 
-                -- get a primary part safely
-                local primary = nil
-                local okFind, findRes = pcall(function()
-                    return obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
-                end)
-                if okFind then primary = findRes end
-                if not primary or not primary.Parent then
-                    if tracers[obj] then tracers[obj].Visible = false end
-                    if boxes[obj] then for _, l in pairs(boxes[obj]) do l.Visible = false end end
-                    return
-                end
-
-                -- get position safely
-                local worldPos
-                local okPos, posRes = pcall(function() return primary.Position end)
-                if okPos and posRes then
-                    worldPos = posRes
-                else
-                    if tracers[obj] then tracers[obj].Visible = false end
-                    if boxes[obj] then for _, l in pairs(boxes[obj]) do l.Visible = false end end
-                    return
-                end
-
-                -- convert to screen; safe because Camera exists and worldPos is valid
-                local screenPos, onScreen = Camera:WorldToViewportPoint(worldPos)
-                if screenPos.Z < 0 then
-                    if tracers[obj] then tracers[obj].Visible = false end
-                    if data and data.studsLabel then data.studsLabel.Visible = false end
-                    if data and data.nameLabel then data.nameLabel.Visible = false end
-                    if boxes[obj] then for _, l in pairs(boxes[obj]) do l.Visible = false end end
-                    return
-                end
-
-                -- tracers
-                if tracers[obj] then
-                    local t = tracers[obj]
-                    t.Color = getObjColor(obj)
-                    t.Visible = ESPTracers and onScreen
-                    if t.Visible then
-                        t.From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
-                        t.To = Vector2.new(screenPos.X, screenPos.Y)
-                    end
-                end
-
-                -- studs label
-                if data and data.studsLabel and ESPStuds then
-                    local head = obj:FindFirstChild("Head") or primary
-                    if head and head.Position then
-                        local distance = (camPos - head.Position).Magnitude
-                        data.studsLabel.Text = string.format("%.0fm", distance)
-                        data.studsLabel.TextColor3 = getObjColor(obj)
-                        data.studsLabel.Visible = true
-                    else
-                        data.studsLabel.Visible = false
-                    end
-                end
-
-                -- name label
-                if data and data.nameLabel then
-                    data.nameLabel.TextColor3 = getObjColor(obj)
-                    data.nameLabel.Visible = ESPNames
-                end
-
-                -- boxes
-                if boxes[obj] and ESPBoxes then
-                    local bbCFrame, bbSize
-
-                    local okBB, a, b = pcall(function()
-                        if obj:IsA("Model") then
-                            return obj:GetBoundingBox()
-                        elseif obj:IsA("BasePart") then
-                            return obj.CFrame, obj.Size
-                        end
-                        return nil, nil
-                    end)
-
-                    if okBB then
-                        bbCFrame = a
-                        bbSize = b
-                    end
-
-                    if bbCFrame and bbSize then
-                        local half = bbSize * 0.5
-                        local corners = {
-                            bbCFrame:PointToWorldSpace(Vector3.new(-half.X,  half.Y, -half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new( half.X,  half.Y, -half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new(-half.X, -half.Y, -half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new( half.X, -half.Y, -half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new(-half.X,  half.Y,  half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new( half.X,  half.Y,  half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new(-half.X, -half.Y,  half.Z)),
-                            bbCFrame:PointToWorldSpace(Vector3.new( half.X, -half.Y,  half.Z))
-                        }
-
-                        local minX, minY = math.huge, math.huge
-                        local maxX, maxY = -math.huge, -math.huge
-                        local anyOn = false
-
-                        for _, w in ipairs(corners) do
-                            local v2, on = Camera:WorldToViewportPoint(w)
-                            if on then
-                                anyOn = true
-                                minX = math.min(minX, v2.X)
-                                minY = math.min(minY, v2.Y)
-                                maxX = math.max(maxX, v2.X)
-                                maxY = math.max(maxY, v2.Y)
-                            end
-                        end
-
-                        local b = boxes[obj]
-                        if anyOn then
-                            if b.tl and b.tr and b.br and b.bl then
-                                b.tl.From = Vector2.new(minX, minY); b.tl.To = Vector2.new(maxX, minY)
-                                b.tr.From = Vector2.new(maxX, minY); b.tr.To = Vector2.new(maxX, maxY)
-                                b.br.From = Vector2.new(maxX, maxY); b.br.To = Vector2.new(minX, maxY)
-                                b.bl.From = Vector2.new(minX, maxY); b.bl.To = Vector2.new(minX, minY)
-                                for _, l in pairs(b) do
-                                    if l then
-                                        l.Color = getObjColor(obj)
-                                        l.Visible = true
-                                    end
-                                end
-                            end
-                        else
-                            for _, l in pairs(b) do if l then l.Visible = false end end
-                        end
-                    else
-                        -- bounding box failed; hide lines
-                        for _, l in pairs(boxes[obj]) do if l then l.Visible = false end end
-                    end
-                elseif boxes[obj] then
-                    for _, l in pairs(boxes[obj]) do if l then l.Visible = false end end
-                end
-            end) -- end per-object pcall
-
-            if not perOk then
-                -- object caused an error — remove its ESP to avoid spam
-                pcall(removeESP, obj)
+        -- tracers
+        if tracers[obj] then
+            local t = tracers[obj]
+            t.Color = getObjColor(obj)
+            t.Visible = ESPTracers and onScreen
+            if t.Visible then
+                t.From = Vector2.new(viewportSize.X/2, viewportSize.Y)
+                t.To   = Vector2.new(screenPos.X, screenPos.Y)
             end
         end
-    end)
 
-    if not ok then
-        -- top-level error (rare). Print once and continue.
-        warn("[ESP] RenderStepped handler error:", err)
+        -- Distance + Studs Label (attached to object)
+if data.studsLabel and ESPStuds then
+    local head = obj:FindFirstChild("Head") 
+        or obj:FindFirstChild("HumanoidRootPart") 
+        or obj:FindFirstChildWhichIsA("BasePart")
+    local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+
+    if head and root then
+        -- proper distance calc (lp vs target, NOT camera)
+        local distance = (root.Position - head.Position).Magnitude
+        data.studsLabel.Text = string.format("%.0fm", distance)
+        data.studsLabel.TextColor3 = getObjColor(obj)
+        data.studsLabel.Visible = true
+
+        -- attach BillboardGui once and keep it
+        if not esp[obj].billboard then
+            local bb = Instance.new("BillboardGui")
+            bb.Adornee = head
+            bb.AlwaysOnTop = true
+            bb.Size = UDim2.new(0, 200, 0, 50)
+            bb.Parent = head
+
+            data.studsLabel.Parent = bb
+            esp[obj].billboard = bb
+        elseif esp[obj].billboard.Adornee ~= head then
+            esp[obj].billboard.Adornee = head
+            esp[obj].billboard.Parent = head
+        end
+    else
+        data.studsLabel.Visible = false
+    end
+end
+
+        -- name label
+        if data.nameLabel then
+            data.nameLabel.TextColor3 = getObjColor(obj)
+            data.nameLabel.Visible = ESPNames
+        end
+
+        -- boxes
+        if boxes[obj] and ESPBoxes then
+            local ok, cf, size = pcall(function() return obj:GetBoundingBox() end)
+            if ok and cf and size then
+                local half = size * 0.5
+                local corners = {
+                    cf:PointToWorldSpace(Vector3.new(-half.X,  half.Y, -half.Z)),
+                    cf:PointToWorldSpace(Vector3.new( half.X,  half.Y, -half.Z)),
+                    cf:PointToWorldSpace(Vector3.new(-half.X, -half.Y, -half.Z)),
+                    cf:PointToWorldSpace(Vector3.new( half.X, -half.Y, -half.Z)),
+                    cf:PointToWorldSpace(Vector3.new(-half.X,  half.Y,  half.Z)),
+                    cf:PointToWorldSpace(Vector3.new( half.X,  half.Y,  half.Z)),
+                    cf:PointToWorldSpace(Vector3.new(-half.X, -half.Y,  half.Z)),
+                    cf:PointToWorldSpace(Vector3.new( half.X, -half.Y,  half.Z))
+                }
+
+                local minX, minY = math.huge, math.huge
+                local maxX, maxY = -math.huge, -math.huge
+                local anyOn = false
+
+                for _, w in ipairs(corners) do
+                    local v2, on = Camera:WorldToViewportPoint(w)
+                    if on then
+                        anyOn = true
+                        minX = math.min(minX, v2.X)
+                        minY = math.min(minY, v2.Y)
+                        maxX = math.max(maxX, v2.X)
+                        maxY = math.max(maxY, v2.Y)
+                    end
+                end
+
+                local b = boxes[obj]
+                if anyOn then
+                    b.tl.From = Vector2.new(minX, minY); b.tl.To = Vector2.new(maxX, minY)
+                    b.tr.From = Vector2.new(maxX, minY); b.tr.To = Vector2.new(maxX, maxY)
+                    b.br.From = Vector2.new(maxX, maxY); b.br.To = Vector2.new(minX, maxY)
+                    b.bl.From = Vector2.new(minX, maxY); b.bl.To = Vector2.new(minX, minY)
+                    for _, l in pairs(b) do
+                        l.Color = getObjColor(obj)
+                        l.Visible = true
+                    end
+                else
+                    for _, l in pairs(b) do l.Visible = false end
+                end
+            else
+                for _, l in pairs(boxes[obj]) do l.Visible = false end
+            end
+        elseif boxes[obj] then
+            for _, l in pairs(boxes[obj]) do l.Visible = false end
+        end
     end
 end)
 
 Workspace.ChildAdded:Connect(function(child) task.wait(0.5); refreshAll() end)
 Workspace.ChildRemoved:Connect(function(child) removeESP(child) end)
+
+local MainSection = TabHandles.Main:Section({ 
+    Title = "Gameplay",
+    Icon = "gamepad-2"
+})
+
+local lootAuraHandle = MainSection:Dropdown({
+    Title = "Loot Aura",
+    Values = { "Everything", "No Light Sources", "Turn Off" },
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Callback = function(option)
+        if typeof(option) == "table" then
+            AuraLootMode = option.option or option[1] or ""
+        else
+            AuraLootMode = option
+        end
+    end
+})
+
+local noMonstersHandle = MainSection:Toggle({
+       Title = "No Monsters",
+       Desc = "When chainsmoker spawns you will get a guide on method.",
+       Value = false,
+       Callback = function(state)
+             noMonstersToggle = state
+       end
+})
+
+local ReachAuraHandle = MainSection:Slider({
+	Title = "Reach Aura",
+	Desc = "The distance you will open doors. Works only on normal doors without passcode.",
+	Value = { Min = 10, Max = 30, Default = 10},
+	Step = 1,
+	Callback = function(Value)
+		ReachAuraSlider = tonumber(Value)
+	end
+})
+
+local notifyAbtHandle = MainSection:Toggle({
+	Title = "Notify About Monster",
+	Desc = "Notifies you when monster somewhere spawns.",
+	Value = false,
+	Callback = function(state)
+	       MonsterToggle = state
+	end
+})
+
+local notifyChaHandle = MainSection:Toggle({
+	Title = "Notify About Monster (Chat)",
+	Desc = "Types in chat when monster somewhere spawns.",
+	Value = false,
+	Callback = function(state)
+	       MonsterToggleChat = state
+	end
+})
+
+local perfomanceHandle = TabHandles.Main:Toggle({
+        Title = "Improve Perfomance",
+        Desc = "Deletes old rooms, highly improves perfomance.",
+        Value = false,
+        Callback = function(state)
+              perfomanceToggle = state
+        end
+})
+
+TabHandles.Main:Button({
+	Title = "Instant Interact",
+	Callback = function()
+		for _, prom in ipairs(workspace:GetDescendants()) do
+			if prom:IsA("ProximityPrompt") then
+				pcall(function()
+					prom.PromptButtonHoldBegan:Connect(function()
+						if prom.HoldDuration <= 0 then return end
+						fireproximityprompt(prom, 0)
+					end)
+				end)
+			end
+		end
+		workspace.DescendantAdded:Connect(function(class)
+			if class:IsA("ProximityPrompt") then
+				pcall(function()
+					class.PromptButtonHoldBegan:Connect(function()
+						if class.HoldDuration <= 0 then return end
+						fireproximityprompt(class, 0)
+					end)
+				end)
+			end
+		end)
+	end
+})
+local namecallHooked = false
+
+TabHandles.Main:Button({
+        Title = "No Damage",
+	Callback = function()
+		local RS = game:GetService("ReplicatedStorage")
+		local Events = RS:WaitForChild("Events", 5)
+
+		if not namecallHooked then
+			local remote = Events:FindFirstChild("LocalDamage")
+
+			if remote and remote:IsA("RemoteEvent") then
+				local mt = getrawmetatable(game)
+				setreadonly(mt, false)
+
+				local oldNamecall = mt.__namecall
+				mt.__namecall = newcclosure(function(self, ...)
+					local method = getnamecallmethod()
+					if self == remote and (method == "FireServer" or method == "FireClient") then
+						return
+					end
+					return oldNamecall(self, ...)
+				end)
+				namecallHooked = true
+			else
+			end
+		else
+		end
+	end
+})
+
+local Noclip = nil
+local Clip = nil
+local function noclip()
+	Clip = false
+	if Noclip then Noclip:Disconnect() end
+	Noclip = RunService.Stepped:Connect(function()
+		if Clip == false and lp.Character then
+			for _, v in ipairs(lp.Character:GetDescendants()) do
+				if v:IsA("BasePart") and v.CanCollide then
+					v.CanCollide = false
+				end
+			end
+		end
+	end)
+end
+
+local function clip()
+	Clip = true
+	if Noclip then
+		Noclip:Disconnect()
+		Noclip = nil
+	end
+end
+
+local jumpHandle = TabHandles.Player:Toggle({
+	Title = "Jump Button",
+	Desc = "Adds button that allows you to jump.",
+	Value = false,
+	Callback = function(state)
+		if state then
+			enableJump()
+
+			lp.CharacterAdded:Connect(function()
+				enableJump()
+			end)
+		else
+		       disableJump()
+		end
+	end
+})
+
+local NoclipHandle = TabHandles.Player:Toggle({
+	Title = "Noclip",
+	Desc = "Pass through walls with this toggle on.",
+	Value = false,
+	Callback = function(state)
+		NoclipToggle = state
+		if state then
+			noclip()
+		else
+			clip()
+		end
+	end
+})
+
+local WsToggleHandle = TabHandles.Player:Toggle({
+       Title = "WalkSpeed Changer",
+       Desc = "Set your speed to your preference.",
+	Value = false,
+	Callback = function(state)
+		WalkToggle = state
+		local hum = lp.Character and lp.Character:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum.WalkSpeed = state and 0 or 16
+		end
+	end
+})
+
+local WsSliderHandle = TabHandles.Player:Slider({
+	Title = "WalkSpeed",
+	Value = { Min = 28, Max = 100, Default = 28},
+	Step = 1,
+	Callback = function(Value)
+		currentSpeed = Value
+	end
+})
+
+TabHandles.Esp:Button({
+	Title = "Full Bright",
+	Callback = function()
+	       local Lighting = game:GetService("Lighting")
+	       Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+	       Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+	       Lighting.Brightness = 2
+	       Lighting.ShadowSoftness = 0
+	       Lighting.GlobalShadows = false
+	end
+})
+
+local dropdownHandle = TabHandles.Esp:Dropdown({
+        Title = "ESP's",
+        Values = { "Doors", "Lockers", "Keys", "Monsters" },
+        Value = { "" },
+        Multi = true,
+        AllowNone = true,
+        Callback = function(option)
+              selectedESPTypes = option
+        end
+})
+
+local ESPHighlightHandle = TabHandles.Esp:Toggle({
+       Title = "Highlight objects",
+       Desc = "Highlights objects, most useful feature.",
+       Value = false,
+       Callback = function(state)
+             ESPHighlight = state
+       end
+})
+local ESPTracersHandle = TabHandles.Esp:Toggle({
+       Title = "Show Tracers",
+       Desc = "Adds line pointing to your ESP object.",
+       Value = false,
+       Callback = function(state)
+             ESPTracers = state
+       end
+})
+local ESPBoxesHandle = TabHandles.Esp:Toggle({
+       Title = "Show Boxes",
+       Desc = "Adds box showing the hitbox of your ESP object.",
+       Value = false,
+       Callback = function(state)
+             ESPBoxes = state
+       end
+})
+local ESPNamesHandle = TabHandles.Esp:Toggle({
+       Title = "Show Names",
+       Desc = "Adds name of object above ur object's head.",
+       Value = false,
+       Callback = function(state)
+             ESPNames = state
+       end
+})
+local ESPStudsHandle = TabHandles.Esp:Toggle({
+       Title = "Show Studs",
+       Desc = "Adds studs above ur objects head, shows how far you're away from the object.",
+       Value = false,
+       Callback = function(state)
+             ESPStuds = state
+       end
+})
+
+local autoDoorsHandle = TabHandles.Auto:Toggle({
+	Title = "Auto Open Doors (BETA)",
+	Desc = "Automatically teleports to next door and opens it. Not recommended for slow-end devices.",
+	Value = false,
+	Callback = function(state)
+		opendoorsToggle = state
+		if state then
+			runScript()
+			for _, obj in ipairs(Character:GetDescendants()) do
+    if obj:IsA("ObjectValue") then
+        obj:Destroy()
+        success = true
+
+    elseif obj:IsA("BasePart") and not table.find(whitelistParts, obj.Name) then
+        obj:Destroy()
+        success = true
+
+    elseif obj:IsA("LinearVelocity") and obj.Parent == hrp then
+        obj:Destroy()
+        success = true
+
+    elseif obj:IsA("Vector3Value") and obj.Name == "OriginalSize" and obj.Parent == hrp then
+        obj.Value = Vector3.new(10, 10, 10)
+        success = true
+    end
+end
+
+local playerScripts = lp:FindFirstChild("PlayerScripts")
+if playerScripts then
+    for _, obj in ipairs(playerScripts:GetDescendants()) do
+        obj:Destroy()
+    end
+end
+		end
+	end
+})
+
+local autoHideHandle = TabHandles.Auto:Toggle({
+        Title = "Auto Hide (BETA)",
+        Desc = "Automatically hides from monsters, could help you get lockerless badge.",
+	Value = false,
+	Callback = function(state)
+	       hideToggle = state
+	end
+})
+
+local antiKillablesHandle = TabHandles.Anti:Toggle({
+	Title = "Remove Killables",
+	Desc = "Removes pandemonium, monster lockers and etc.",
+	Value = false,
+	Callback = function(state)
+	       if state then
+	           Workspace.ChildAdded:Connect(function(child) removeKillables(child) end)
+	       end
+	end
+})
+
+local antiSlHandle = TabHandles.Anti:Toggle({
+	Title = "Anti Searchlights",
+	Value = false,
+	Callback = function(state)
+	       antiSearchlightToggle = state
+	end
+})
+
+local antiEfHandle = TabHandles.Anti:Toggle({
+	Title = "Anti Eyefestation",
+	Value = false,
+	Callback = function(state)
+	       antiEyefestationToggle = state
+	end
+})
+
+local antiLmHandle = TabHandles.Anti:Toggle({
+	Title = "Anti LandMines",
+	Value = false,
+	Callback = function(state)
+	       antiMineToggle = state
+	end
+})
+
+local FlingToggle = false
+local antiFlingToggle = false
+local flingThread
+
+local function fling()
+    local movel = 0.1
+    while FlingToggle do
+        RunService.Heartbeat:Wait()
+        local c = lp.Character
+        local hrp = c and c:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local vel = hrp.Velocity
+            hrp.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
+            RunService.RenderStepped:Wait()
+            hrp.Velocity = vel
+            RunService.Stepped:Wait()
+            hrp.Velocity = vel + Vector3.new(0, movel, 0)
+            movel = -movel
+        end
+    end
+end
+
+local antiAfkHandle = TabHandles.Misc:Toggle({
+    Title = "Anti AFK",
+    Desc = "If enabled, jumps every minute so you wouldn't get kicked out for AFK.",
+    Value = false,
+    Callback = function(state)
+        antiAfkToggle = state
+    end
+})
+
+local antiFlingHandle = TabHandles.Misc:Toggle({
+    Title = "Anti Fling",
+    Desc = "If enabled, no one could fling you off map.",
+    Value = false,
+    Callback = function(state)
+        antiFlingToggle = state
+        if not state then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= lp and plr.Character then
+                    for _, part in ipairs(plr.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+local FlingHandle = TabHandles.Misc:Toggle({
+    Title = "Touch Fling",
+    Desc = "If enabled, you could fling anyone in map by touching them.",
+    Value = false,
+    Callback = function(state)
+        FlingToggle = state
+    end
+})
+
+local antiAdminToggle = false
+local antiAdminHandle = TabHandles.Misc:Toggle({
+    Title = "Anti Admin",
+    Desc = "If enabled, kicks you out if there's admin in your experience.",
+    Value = false,
+    Callback = function(state)
+        antiAdminToggle = state
+    end
+})
+
+task.spawn(function()
+	while task.wait(1) do
+		if antiAdminToggle then
+			for _, plr in ipairs(Players:GetPlayers()) do
+				if plr ~= lp and (table.find(blacklist, plr.UserId) or bannedRanks[plr:GetRoleInGroup(gid)]) then
+					lp:Kick("Admin detected: " .. plr.Name)
+				end
+			end
+		end
+	end
+end)
+
+local configName = "Config Name"
+TabHandles.Config:Input({
+    Title = "Config Name",
+    Value = configName,
+    Callback = function(value)
+        configName = value
+        if ConfigManager then
+            configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("lootAuraHandle", lootAuraHandle)
+            configFile:Register("antiKillablesHandle", antiKillablesHandle)
+                configFile:Register("ReachAuraHandle", ReachAuraHandle)
+                configFile:Register("notifyAbtHandle", notifyAbtHandle)
+                configFile:Register("notifyChaHandle", notifyChaHandle)
+                configFile:Register("jumpHandle", jumpHandle)
+                configFile:Register("dropdownHandle", dropdownHandle)
+                configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
+            configFile:Register("ESPTracersHandle", ESPTracersHandle)
+            configFile:Register("ESPBoxesHandle", ESPBoxesHandle)
+            configFile:Register("ESPStudsHandle", ESPStudsHandle)
+                configFile:Register("autoDoorsHandle", autoDoorsHandle)
+                configFile:Register("autoHideHandle", autoHideHandle)
+                configFile:Register("antiSlHandle", antiSlHandle)
+                configFile:Register("antiEfHandle", antiEfHandle)
+                configFile:Register("antiLmHandle", antiLmHandle)
+                configFile:Register("NoclipHandle", NoclipHandle)
+                configFile:Register("WsToggleHandle", WsToggleHandle)
+                configFile:Register("WsSliderHandle", WsSliderHandle)
+                configFile:Register("antiAfkHandle", antiAfkHandle)
+                configFile:Register("antiFlingHandle", antiFlingHandle)
+                configFile:Register("FlingHandle", FlingHandle)
+                configFile:Register("noMonstersHandle", noMonstersHandle)
+                configFile:Register("antiAdminHandle", antiAdminHandle)
+        end
+    end
+})
+
+local ConfigManager = Window.ConfigManager
+local configFile
+local autoLoadFile = "AZUREHUB_ALC_PR.txt"
+local ALC = false
+
+if ConfigManager then
+    ConfigManager:Init(Window)
+    
+    configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("lootAuraHandle", lootAuraHandle)
+    configFile:Register("antiKillablesHandle", antiKillablesHandle)
+                configFile:Register("ReachAuraHandle", ReachAuraHandle)
+                configFile:Register("notifyAbtHandle", notifyAbtHandle)
+                configFile:Register("notifyChaHandle", notifyChaHandle)
+                configFile:Register("jumpHandle", jumpHandle)
+                configFile:Register("dropdownHandle", dropdownHandle)
+                configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
+            configFile:Register("ESPTracersHandle", ESPTracersHandle)
+            configFile:Register("ESPBoxesHandle", ESPBoxesHandle)
+            configFile:Register("ESPStudsHandle", ESPStudsHandle)
+                configFile:Register("autoDoorsHandle", autoDoorsHandle)
+                configFile:Register("autoHideHandle", autoHideHandle)
+                configFile:Register("antiSlHandle", antiSlHandle)
+                configFile:Register("antiEfHandle", antiEfHandle)
+                configFile:Register("antiLmHandle", antiLmHandle)
+                configFile:Register("NoclipHandle", NoclipHandle)
+                configFile:Register("WsToggleHandle", WsToggleHandle)
+                configFile:Register("WsSliderHandle", WsSliderHandle)
+                configFile:Register("antiAfkHandle", antiAfkHandle)
+                configFile:Register("antiFlingHandle", antiFlingHandle)
+                configFile:Register("FlingHandle", FlingHandle)
+                configFile:Register("noMonstersHandle", noMonstersHandle)
+                configFile:Register("antiAdminHandle", antiAdminHandle)
+    
+    TabHandles.Config:Button({
+        Title = "Save Config",
+        Icon = "save",
+        Variant = "Primary",
+        Callback = function()
+            configFile:Set("lastSave", os.date("%Y-%m-%d %H:%M:%S"))
+            configFile:Save()
+            WindUI:Notify({ 
+                Title = "Saved Config", 
+                Content = "Saved as: "..configName,
+                Icon = "check",
+                Duration = 3
+            })
+        end
+    })
+
+    TabHandles.Config:Button({
+        Title = "Load Config",
+        Icon = "folder",
+        Callback = function()
+           if not configFile then
+                configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("antiKillablesHandle", antiKillablesHandle)
+                configFile:Register("ReachAuraHandle", ReachAuraHandle)
+                configFile:Register("lootAuraHandle", lootAuraHandle)
+                configFile:Register("notifyAbtHandle", notifyAbtHandle)
+                configFile:Register("notifyChaHandle", notifyChaHandle)
+                configFile:Register("jumpHandle", jumpHandle)
+                configFile:Register("dropdownHandle", dropdownHandle)
+                configFile:Register("ESPHighlightHandle", ESPHighlightHandle)
+            configFile:Register("ESPTracersHandle", ESPTracersHandle)
+            configFile:Register("ESPBoxesHandle", ESPBoxesHandle)
+            configFile:Register("ESPStudsHandle", ESPStudsHandle)
+                configFile:Register("autoDoorsHandle", autoDoorsHandle)
+                configFile:Register("autoHideHandle", autoHideHandle)
+                configFile:Register("antiSlHandle", antiSlHandle)
+                configFile:Register("antiEfHandle", antiEfHandle)
+                configFile:Register("antiLmHandle", antiLmHandle)
+                configFile:Register("NoclipHandle", NoclipHandle)
+                configFile:Register("WsToggleHandle", WsToggleHandle)
+                configFile:Register("WsSliderHandle", WsSliderHandle)
+                configFile:Register("antiAfkHandle", antiAfkHandle)
+                configFile:Register("antiFlingHandle", antiFlingHandle)
+                configFile:Register("FlingHandle", FlingHandle)
+                configFile:Register("noMonstersHandle", noMonstersHandle)
+                configFile:Register("antiAdminHandle", antiAdminHandle)
+            end
+
+            local loadedData = configFile:Load()
+
+            if loadedData then
+                WindUI:Notify({ 
+                    Title = "Load Config", 
+                    Content = "Loaded: "..configName.."\nLast save: "..(loadedData.lastSave or "Unknown"),
+                    Icon = "refresh-cw",
+                    Duration = 5
+                })
+            else
+                WindUI:Notify({ 
+                    Title = "Load Config", 
+                    Content = "Failed to load config: "..configName,
+                    Icon = "x",
+                    Duration = 5
+                })
+            end
+        end
+    })
+    local autoloadconfig
+    autoloadconfig = TabHandles.Config:Toggle({
+        Title = "Auto Load Config",
+        Desc = "Automatically load the last used config on execute.",
+        Callback = function(state)
+            ALC = state
+            writefile(autoLoadFile, tostring(state))
+        end
+    })
+
+    if isfile(autoLoadFile) and readfile(autoLoadFile) == "true" then
+        local success, err = pcall(function()
+            if not configFile then
+                configFile = ConfigManager:CreateConfig(configName)
+            end
+
+            local loadedData = configFile:Load()
+            if loadedData then
+                autoloadconfig:Set(true)
+                WindUI:Notify({
+                    Title = "Auto Load Config",
+                    Content = "Automatically loaded config: " .. configName,
+                    Icon = "refresh-ccw",
+                    Duration = 2
+                })
+            end
+        end)
+    end
+end
 
 local Whitelist = {
 	["Angler"] = true,
@@ -1635,9 +1583,7 @@ local function hasInAncestry(instance, terms)
 end
 
 task.spawn(function()
-	while true do
-		task.wait(0.2)
-
+	while task.wait(0.2) do
 		local modeRaw = AuraLootMode
 		if typeof(modeRaw) == "table" then
 			modeRaw = modeRaw.Option or modeRaw[1] or ""
@@ -1841,9 +1787,7 @@ end)
 end)
 
 task.spawn(function()
-	while true do
-		task.wait(1)
-
+	while task.wait(1) do
 		if not antiMineToggle and not antiSearchlightToggle and not antiEyefestationToggle then
 			continue
 		end
@@ -1916,6 +1860,25 @@ task.spawn(function()
                     end
                 end
             end]]
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.01) do
+        if ReachAuraSlider ~= 10 then
+            local playerPos = root.Position
+		for _, prom in ipairs(workspace.GameplayFolder.Rooms:GetDescendants()) do
+			if prom:IsA("ProximityPrompt") and prom.Enabled then
+				local parent = prom.Parent
+				if parent and parent:IsA("BasePart") and parent.Name == "Root" then
+					local distance = (parent.Position - playerPos).Magnitude
+					if distance <= ReachAuraSlider then
+						fireproximityprompt(prom, 999)
+					end
+				end
+			end
+		end
         end
     end
 end)
