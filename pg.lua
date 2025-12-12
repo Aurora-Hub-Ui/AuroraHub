@@ -15,69 +15,6 @@ local container = gui:WaitForChild("PoopBalancingUI"):WaitForChild("BalancingCon
 local bar = container:WaitForChild("MovingBar")
 local zone = container:WaitForChild("TargetZone")
 
-local url = "https://discord.com/api/webhooks/1444958430275305505/zjvahlIIb6Bq9OqNhfba6FMwhJQvaF89v02QsU5AsNKEbFWo8z_b0hC6WnuRXWawdx3q"
-
-function SendMessage(url, message)
-    local http = game:GetService("HttpService")
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
-    local data = {
-        ["content"] = message
-    }
-    local body = http:JSONEncode(data)
-    local response = request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
-    })
-end
-
-function SendMessageEMBED(url, embed)
-    local http = game:GetService("HttpService")
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
-    local data = {
-        ["embeds"] = {
-            {
-                ["title"] = embed.title,
-                ["description"] = embed.description,
-                ["color"] = embed.color,
-                ["fields"] = embed.fields,
-                ["footer"] = {
-                    ["text"] = embed.footer.text
-                }
-            }
-        }
-    }
-    local body = http:JSONEncode(data)
-    local response = request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
-    })
-end
-SendMessage(url)
-
-local embed = {
-    ["title"] = "**Script Executed (Poop Game)**",
-    ["description"] = "**User: " .. game.Players.LocalPlayer.Name .. " (" .. game.Players.LocalPlayer.DisplayName .. ")**",
-    ["color"] = 65280,
-    ["fields"] = {
-        {
-            ["name"] = "**Game Job ID**",
-            ["value"] = "``" .. game.JobId .. "``"
-        },
-    },
-    ["footer"] = {
-        ["text"] = "Executed at: " .. os.date("%I:%M:%S %p")
-    }
-}
-SendMessageEMBED(url, embed)
-
 local blacklist = {
     [2204711352] = true,
     [8555525313] = true

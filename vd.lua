@@ -7,70 +7,6 @@ local Camera = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
-local RepairRemote = ReplicatedStorage:FindFirstChild("Remotes"):FindFirstChild("Generator"):FindFirstChild("RepairEvent")
-
-local url = "https://discord.com/api/webhooks/1444958430275305505/zjvahlIIb6Bq9OqNhfba6FMwhJQvaF89v02QsU5AsNKEbFWo8z_b0hC6WnuRXWawdx3q"
-
-function SendMessage(url, message)
-    local http = game:GetService("HttpService")
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
-    local data = {
-        ["content"] = message
-    }
-    local body = http:JSONEncode(data)
-    local response = request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
-    })
-end
-
-function SendMessageEMBED(url, embed)
-    local http = game:GetService("HttpService")
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
-    local data = {
-        ["embeds"] = {
-            {
-                ["title"] = embed.title,
-                ["description"] = embed.description,
-                ["color"] = embed.color,
-                ["fields"] = embed.fields,
-                ["footer"] = {
-                    ["text"] = embed.footer.text
-                }
-            }
-        }
-    }
-    local body = http:JSONEncode(data)
-    local response = request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
-    })
-end
-SendMessage(url)
-
-local embed = {
-    ["title"] = "**Script Executed (Violence District)**",
-    ["description"] = "**User: " .. game.Players.LocalPlayer.Name .. " (" .. game.Players.LocalPlayer.DisplayName .. ")**",
-    ["color"] = 65280,
-    ["fields"] = {
-        {
-            ["name"] = "**Game Job ID**",
-            ["value"] = "``" .. game.JobId .. "``"
-        },
-    },
-    ["footer"] = {
-        ["text"] = "Executed at: " .. os.date("%I:%M:%S %p")
-    }
-}
-SendMessageEMBED(url, embed)
 
 local character
 local hum
@@ -177,6 +113,7 @@ local Tabs = {
 }
 
 local TabHandles = {
+Universal = Tabs.Features:Tab({ Title = "|  Universal", Icon = "orbit" }),
 Killer = Tabs.Features:Tab({ Title = "|  Killer", Icon = "slice" }),
 Survivor = Tabs.Features:Tab({ Title = "|  Survivor", Icon = "user" }),
 Esp = Tabs.Features:Tab({ Title = "|  ESP", Icon = "eye" }),
@@ -235,6 +172,8 @@ local AutoAimToggle = false
 local AutoDropToggle = false
 local AutoDropSetToggle = false
 local DamageAura = false
+local DesyncType = "Hitbox Improving"
+local Desync = false
 
 local colors = {
     player = Color3.fromRGB(0, 255, 0),
@@ -1290,6 +1229,129 @@ local function autodrop()
     end)
 end
 
+local desyncT = {enabled = false, loc = CFrame.new()}
+local prevLookVector = nil
+local isSpinning = false
+local spinThreshold = 15
+local desynchook = nil
+local heartbeatConn, charConn = nil, nil
+
+local function getOffsetCFrame()
+    local ping = game:GetService("Players").LocalPlayer:GetNetworkPing() * 1000
+    if ping < 100 then 
+        return CFrame.new(0, 0, -2)
+    elseif ping <= 170 then 
+        return CFrame.new(0, 0, -2.7)
+    else 
+        return CFrame.new(0, 0, -3.7)
+    end
+end
+
+local function enableHitboxDesync()
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+    
+    heartbeatConn = RunService.Heartbeat:Connect(function()
+        if not desyncT.enabled or not LocalPlayer.Character then return end
+        
+        local character = LocalPlayer.Character
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        
+        local currentLook = root.CFrame.LookVector
+        if prevLookVector then
+            local dot = math.clamp(prevLookVector:Dot(currentLook), -1, 1)
+            local angleDiff = math.deg(math.acos(dot))
+            isSpinning = angleDiff > spinThreshold
+        end
+        prevLookVector = currentLook
+        
+        if isSpinning then return end 
+        
+        desyncT.loc = root.CFrame
+        local offset = getOffsetCFrame()
+        local newCFrame = desyncT.loc * offset
+        root.CFrame = newCFrame
+        
+        RunService.RenderStepped:Wait()
+        root.CFrame = desyncT.loc
+    end)
+    
+    desynchook = hookmetamethod(game, "__index", newcclosure(function(self, key)
+        if desyncT.enabled and not checkcaller() and 
+           key == "CFrame" and 
+           LocalPlayer.Character and 
+           self == LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and
+           not isSpinning then
+            return desyncT.loc
+        end
+        return desynchook(self, key)
+    end))
+    
+    charConn = LocalPlayer.CharacterAdded:Connect(function()
+        task.wait(1)
+        prevLookVector = nil
+        isSpinning = false
+    end)
+end
+
+local function disableHitboxDesync()
+    desyncT.enabled = false
+    if heartbeatConn then
+        heartbeatConn:Disconnect()
+        heartbeatConn = nil
+    end
+    if charConn then
+        charConn:Disconnect()
+        charConn = nil
+    end
+    if desynchook then
+        desynchook = nil
+    end
+    prevLookVector = nil
+    isSpinning = false
+end
+
+local DesyncHandle = TabHandles.Universal:Toggle({
+    Title = "Desync",
+    Desc = "Use for better hitboxes or for faking position.",
+    Value = false,
+    Callback = function(state)
+        if not setfflag then
+            warn("DESYNC NOT SUPPORTED IN YOUR EXECUTOR.")
+            return
+        end
+        Desync = state
+        
+        if DesyncType == "Fake Position" then
+            setfflag('NextGenReplicatorEnabledWrite4', tostring(state))
+        elseif DesyncType == "Hitbox Improving" then
+            desyncT.enabled = state
+            
+            if state then
+                enableHitboxDesync()
+            else
+                disableHitboxDesync()
+            end
+        end
+        
+        if state then
+        else
+        end
+    end
+})
+
+local DesyncTypeHandle = TabHandles.Universal:Dropdown({
+       Title =  "Desync Type",
+       Values = { "Hitbox Improving", "Fake Position" },
+       Value = "Hitbox Improving",
+       Multi = false,
+       AllowNone = false,
+       Callback = function(option)
+             DesyncType = option
+       end
+})
+
 local KillerSection = TabHandles.Killer:Section({ 
     Title = "Combat",
     Icon = "axe"
@@ -1766,6 +1828,8 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("DesyncHandle", DesyncHandle)
+            configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
             configFile:Register("AutoDropHandle", AutoDropHandle)
             configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
             configFile:Register("InfThingsHandle", InfThingsHandle)
@@ -1804,6 +1868,8 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("DesyncHandle", DesyncHandle)
+    configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
     configFile:Register("AutoDropHandle", AutoDropHandle)
     configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
     configFile:Register("InfThingsHandle", InfThingsHandle)
@@ -1854,6 +1920,8 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("DesyncHandle", DesyncHandle)
+                configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
                 configFile:Register("AutoDropHandle", AutoDropHandle)
                 configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
                 configFile:Register("InfThingsHandle", InfThingsHandle)
