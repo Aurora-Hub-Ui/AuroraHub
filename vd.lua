@@ -1092,7 +1092,7 @@ function createDraggableToggle()
     UICorner.Parent = ToggleFrame
 
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 1, 0)
+    Title.Size = UDim2.new(0.7, 0, 0.7, 0)
     Title.BackgroundTransparency = 1
     Title.Text = "No Cd: OFF"
     Title.Font = Enum.Font.Code
@@ -1358,7 +1358,7 @@ local KillerSection = TabHandles.Killer:Section({
 })
 local InfThingsHandle
 InfThingsHandle = KillerSection:Toggle({
-    Title = "Infinite Abillities " .. (getTag(lp.Name) and "" or " (PREMIUM)"),
+    Title = "Infinite Abilities " .. (getTag(lp.Name) == "[ FREEMIUM ]" and "(PREMIUM)" or ""),
     Desc = "Includes no attack cooldown. Supported killers for inf abillities: Slasher, Masked, Jeff, Stalker.",
     Value = false,
     Callback = function(state)
@@ -1469,7 +1469,7 @@ local SurvSection = TabHandles.Survivor:Section({
 })
 local GodModeHandle
 GodModeHandle = SurvSection:Toggle({
-    Title = "God Mode " .. (getTag(lp.Name) and "" or " (PREMIUM)"),
+    Title = "God Mode " .. (getTag(lp.Name) == "[ FREEMIUM ]" and "(PREMIUM)" or ""),
     Desc = "Prevents you from being attacked, makes you invincible.",
     Value = false,
     Callback = function(state)
