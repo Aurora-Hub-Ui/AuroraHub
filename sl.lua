@@ -324,6 +324,7 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
             configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
             configFile:Register("DodgeHandle", DodgeHandle)
             configFile:Register("BatHandle", BatHandle)
@@ -348,6 +349,7 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
     configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
     configFile:Register("DodgeHandle", DodgeHandle)
     configFile:Register("BatHandle", BatHandle)
@@ -382,6 +384,7 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
                 configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
                 configFile:Register("DodgeHandle", DodgeHandle)
                 configFile:Register("BatHandle", BatHandle)
