@@ -1,0 +1,554 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+ServerScriptService = game:GetService("ServerScriptService")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
+local username = lp.Name
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+local PlayerGUI = lp:FindFirstChildOfClass("PlayerGui")
+local VIM = game:GetService("VirtualInputManager")
+local GuiService = game:GetService("GuiService")
+
+local character
+local hum
+local root
+
+local function uCR(char)
+    character = char
+    root = character:WaitForChild("HumanoidRootPart", 5)
+    hum = character:WaitForChild("Humanoid", 5)
+end
+
+uCR(lp.Character or lp.CharacterAdded:Wait())
+lp.CharacterAdded:Connect(function(newChar)
+    uCR(newChar)
+end)
+
+local blacklist = {"Tatlis"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter" }
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local function getTag(name)
+    for _, v in ipairs(premium_users) do
+        if v == name then
+            return "[ PREMIUM ]"
+        end
+    end
+    return "[ FREEMIUM ]"
+end
+
+local discordLink = "https://discord.gg/QmvpbPdw9J"
+setclipboard(discordLink)
+
+if blacklist[lp.UserId] then
+    lp:Kick("Exploiting")
+    return
+end
+
+local gid = 1032198460
+local bannedRanks = {"Owner", "Admin", "Community Managers", "MODERATOR", "Support", "Tester"}
+local rankName = lp:GetRoleInGroup(1032198460)
+if bannedRanks[rankName] then
+    lp:Kick("Exploiting")
+end
+
+print("Loaded!\nAzureHub By Cat\nDiscord: https://discord.gg/QmvpbPdw9J")
+
+WindUI:SetNotificationLower(true)
+local Window = WindUI:CreateWindow({
+    Title = "Azure Hub | Slap " .. getTag(lp.Name),
+    Author = "discord.gg/QmvpbPdw9J",
+    Folder = "SlapHub",
+    Size = UDim2.fromOffset(500, 300),
+    Theme = "Dark",
+    User = {
+        Enabled = false,
+        Anonymous = false
+    },
+    Transparent = true,
+    SideBarWidth = 220,
+    ScrollBarEnabled = true
+})
+
+Window:CreateTopbarButton("theme-switcher", "moon", function()
+    WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
+    WindUI:Notify({
+        Title = "Theme Changed",
+        Content = "Current theme: "..WindUI:GetCurrentTheme(),
+        Duration = 2
+    })
+end, 990)
+Window:SetToggleKey(Enum.KeyCode.K)
+
+local Logs = Window:Tab({ Title = "|  Update Logs", Icon = "scroll-text" })
+Window:Divider()
+
+local Tabs = {
+    Features = Window:Section({ Title = "Features", Opened = true }),
+    Utilities = Window:Section({ Title = "Utilities", Opened = true })
+}
+
+local TabHandles = {
+     Attacker = Tabs.Features:Tab({ Title = "|  Attacker", Icon = "swords" }),
+     Defender = Tabs.Features:Tab({ Title = "|  Defender", Icon = "shield" }),
+     Player = Tabs.Features:Tab({ Title = "|  Player", Icon = "users-round" }),
+     Misc = Tabs.Features:Tab({ Title = "|  Misc", Icon = "layout-grid" }),
+     Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
+}
+
+local updparagraph = Logs:Paragraph({
+    Title = "Update Logs",
+    Desc = "14.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "clipboard",
+            Title = "Discord Server",
+            Callback = function() setclipboard(discordLink) WindUI:Notify({ Title = "Discord Server", Content = "Link Copied!", Icon = "info", Duration = 2 }) end,
+        }
+    }
+})
+
+local AutoDodgeToggle = false
+local AutoDodgeChance = 100
+local AutoHeavyweightToggle = false
+local AutoBatToggle = false
+local NotifyOnFail = false
+
+local WalkToggle = false
+local currentSpeed = 16
+local Noclip = nil
+local Clip = nil
+local NoclipToggle = false
+
+local antiAfkToggle = false
+local FlingToggle = false
+local antiFlingToggle = false
+local flingThread
+
+local function noclip()
+	Clip = false
+	if Noclip then Noclip:Disconnect() end
+	Noclip = RunService.Stepped:Connect(function()
+		if Clip == false and lp.Character then
+			for _, v in ipairs(lp.Character:GetDescendants()) do
+				if v:IsA("BasePart") and v.CanCollide then
+					v.CanCollide = false
+				end
+			end
+		end
+	end)
+end
+
+local function clip()
+	Clip = true
+	if Noclip then
+		Noclip:Disconnect()
+		Noclip = nil
+	end
+end
+
+local function applyBypassSpeed()
+    while true do
+        task.wait(0.1)
+        if not WalkToggle then continue end
+        if not hum then continue end
+
+        for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
+            conn:Disable()
+        end
+
+        hum.WalkSpeed = currentSpeed
+    end
+end
+
+local function fling()
+    local movel = 0.1
+    while FlingToggle do
+        RunService.Heartbeat:Wait()
+        local c = lp.Character
+        local hrp = c and c:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local vel = hrp.Velocity
+            hrp.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
+            RunService.RenderStepped:Wait()
+            hrp.Velocity = vel
+            RunService.Stepped:Wait()
+            hrp.Velocity = vel + Vector3.new(0, movel, 0)
+            movel = -movel
+        end
+    end
+end
+
+local HeavyweightHandle = TabHandles.Attacker:Toggle({
+	Title = "Auto Perfect Heavyweight",
+	Desc = "Clicks if bar is in green zone in heavyweight minigame.",
+	Value = false,
+	Callback = function(state)
+		AutoHeavyweightToggle = state
+	end
+})
+--[[local BatHandle = TabHandles.Attacker:Toggle({
+	Title = "Auto Perfect Bat",
+	Desc = "Clicks all the circles at the perfect timing.",
+	Value = false,
+	Callback = function(state)
+		AutoBatToggle = state
+	end
+})]]
+
+local DodgeHandle = TabHandles.Defender:Toggle({
+	Title = "Auto Dodge",
+	Desc = "Dodges opponent's slap.",
+	Value = false,
+	Callback = function(state)
+		AutoDodgeToggle = state
+	end
+})
+local DodgeChanceHandle = TabHandles.Defender:Slider({
+       Title = "Dodging Chance",
+       Desc = "Chance of successfully dodging opponent's slap.",
+       Step = 1,
+	Value = { Min = 0, Max = 100, Default = 100 },
+	Callback = function(Value)
+		AutoDodgeChance = tonumber(Value)
+	end
+})
+local NotifyOnFailHandle = TabHandles.Defender:Toggle({
+	Title = "Notify On Fail",
+	Desc = "You'll get notified if dodging fails (chance > " .. AutoDodgeChance .. ")",
+	Value = false,
+	Callback = function(state)
+		NotifyOnFail = state
+	end
+})
+
+local NoclipHandle = TabHandles.Player:Toggle({
+	Title = "Noclip",
+	Desc = "Pass through walls with this toggle on.",
+	Value = false,
+	Callback = function(state)
+		NoclipToggle = state
+		if state then
+			noclip()
+		else
+			clip()
+		end
+	end
+})
+local WsToggleHandle = TabHandles.Player:Toggle({
+	Title = "WalkSpeed Changer",
+	Desc = "Set your speed to your preference.",
+	Value = false,
+	Callback = function(state)
+		WalkToggle = state
+	end
+})
+local WsSliderHandle = TabHandles.Player:Slider({
+       Title = "WalkSpeed",
+       Step = 1,
+	Value = { Min = 16, Max = 100, Default = 16 },
+	Callback = function(Value)
+		currentSpeed = Value
+		applyBypassSpeed()
+	end
+})
+
+local antiAfkHandle = TabHandles.Misc:Toggle({
+    Title = "Anti AFK",
+    Desc = "If enabled, jumps every minute so you wouldn't get kicked out for AFK.",
+    Value = false,
+    Callback = function(state)
+        antiAfkToggle = state
+    end
+})
+
+local antiFlingHandle = TabHandles.Misc:Toggle({
+    Title = "Anti Fling",
+    Desc = "If enabled, no one could fling you off map.",
+    Value = false,
+    Callback = function(state)
+        antiFlingToggle = state
+        if not state then
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= lp and plr.Character then
+                    for _, part in ipairs(plr.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+local FlingHandle = TabHandles.Misc:Toggle({
+    Title = "Touch Fling",
+    Desc = "If enabled, you could fling anyone in map by touching them.",
+    Value = false,
+    Callback = function(state)
+        FlingToggle = state
+    end
+})
+
+local antiAdminToggle = false
+local antiAdminHandle = TabHandles.Misc:Toggle({
+    Title = "Anti Admin",
+    Desc = "If enabled, kicks you out if there's admin in your experience.",
+    Value = false,
+    Callback = function(state)
+        antiAdminToggle = state
+    end
+})
+
+task.spawn(function()
+	while task.wait(1) do
+		if antiAdminToggle then
+			for _, plr in ipairs(Players:GetPlayers()) do
+				if plr ~= lp and (table.find(blacklist, plr.UserId) or bannedRanks[plr:GetRoleInGroup(gid)]) then
+					lp:Kick("Admin detected: " .. plr.Name)
+				end
+			end
+		end
+	end
+end)
+
+local configName = "Config Name"
+TabHandles.Config:Input({
+    Title = "Config Name",
+    Value = configName,
+    Callback = function(value)
+        configName = value
+        if ConfigManager then
+            configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
+            configFile:Register("DodgeHandle", DodgeHandle)
+            configFile:Register("BatHandle", BatHandle)
+            configFile:Register("HeavyweightHandle", HeavyweightHandle)
+            configFile:Register("NoclipHandle", NoclipHandle)
+            configFile:Register("WsToggleHandle", WsToggleHandle)
+            configFile:Register("WsSliderHandle", WsSliderHandle)
+            configFile:Register("antiAfkHandle", antiAfkHandle)
+            configFile:Register("antiFlingHandle", antiFlingHandle)
+            configFile:Register("FlingHandle", FlingHandle)
+            configFile:Register("antiAdminHandle", antiAdminHandle)
+        end
+    end
+})
+
+local ConfigManager = Window.ConfigManager
+local configFile
+local autoLoadFile = "AZUREHUB_ALC_SL.txt"
+local ALC = false
+
+if ConfigManager then
+    ConfigManager:Init(Window)
+    
+    configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
+    configFile:Register("DodgeHandle", DodgeHandle)
+    configFile:Register("BatHandle", BatHandle)
+    configFile:Register("HeavyweightHandle", HeavyweightHandle)
+    configFile:Register("NoclipHandle", NoclipHandle)
+    configFile:Register("WsToggleHandle", WsToggleHandle)
+    configFile:Register("WsSliderHandle", WsSliderHandle)
+    configFile:Register("antiAfkHandle", antiAfkHandle)
+    configFile:Register("antiFlingHandle", antiFlingHandle)
+    configFile:Register("FlingHandle", FlingHandle)
+    configFile:Register("antiAdminHandle", antiAdminHandle)
+    
+    TabHandles.Config:Button({
+        Title = "Save Config",
+        Icon = "save",
+        Variant = "Primary",
+        Callback = function()
+            configFile:Set("lastSave", os.date("%Y-%m-%d %H:%M:%S"))
+            configFile:Save()
+            WindUI:Notify({ 
+                Title = "Saved Config", 
+                Content = "Saved as: "..configName,
+                Icon = "check",
+                Duration = 3
+            })
+        end
+    })
+
+    TabHandles.Config:Button({
+        Title = "Load Config",
+        Icon = "folder",
+        Callback = function()
+           if not configFile then
+                configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
+                configFile:Register("DodgeHandle", DodgeHandle)
+                configFile:Register("BatHandle", BatHandle)
+                configFile:Register("HeavyweightHandle", HeavyweightHandle)
+                configFile:Register("NoclipHandle", NoclipHandle)
+                configFile:Register("WsToggleHandle", WsToggleHandle)
+                configFile:Register("WsSliderHandle", WsSliderHandle)
+                configFile:Register("antiAfkHandle", antiAfkHandle)
+                configFile:Register("antiFlingHandle", antiFlingHandle)
+                configFile:Register("FlingHandle", FlingHandle)
+                configFile:Register("antiAdminHandle", antiAdminHandle)
+            end
+
+            local loadedData = configFile:Load()
+
+            if loadedData then
+                WindUI:Notify({ 
+                    Title = "Load Config", 
+                    Content = "Loaded: "..configName.."\nLast save: "..(loadedData.lastSave or "Unknown"),
+                    Icon = "refresh-cw",
+                    Duration = 5
+                })
+            else
+                WindUI:Notify({ 
+                    Title = "Load Config", 
+                    Content = "Failed to load config: "..configName,
+                    Icon = "x",
+                    Duration = 5
+                })
+            end
+        end
+    })
+    local autoloadconfig
+    autoloadconfig = TabHandles.Config:Toggle({
+        Title = "Auto Load Config",
+        Desc = "Automatically load the last used config on execute.",
+        Callback = function(state)
+            ALC = state
+            writefile(autoLoadFile, tostring(state))
+        end
+    })
+
+    if isfile(autoLoadFile) and readfile(autoLoadFile) == "true" then
+        local success, err = pcall(function()
+            if not configFile then
+                configFile = ConfigManager:CreateConfig(configName)
+            end
+
+            local loadedData = configFile:Load()
+            if loadedData then
+                autoloadconfig:Set(true)
+                WindUI:Notify({
+                    Title = "Auto Load Config",
+                    Content = "Automatically loaded config: " .. configName,
+                    Icon = "refresh-ccw",
+                    Duration = 2
+                })
+            end
+        end)
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    local gui = lp:FindFirstChildOfClass("PlayerGui")
+    if not gui then return end
+    
+    local slapGameUI = gui:FindFirstChild("SlapGameUI")
+    if not slapGameUI then return end
+    
+    local inGameHUD = slapGameUI:FindFirstChild("InGameHUD")
+    if not inGameHUD then
+        inGameHUD = slapGameUI:FindFirstChild("InGameHUD_Mobile")
+    end
+    if not inGameHUD then return end
+    
+    local battleOptions = inGameHUD:FindFirstChild("BattleOptions")
+    local container = battleOptions and battleOptions:FindFirstChild("Container")
+    local feint = container and (container:FindFirstChild("Feint") or container:FindFirstChild("feint"))
+    
+    if obj:IsA("Sound") and obj.SoundId == "rbxassetid://71441046303493" and AutoDodgeToggle and feint and not feint.Visible then
+        local chance = math.random(0, 100)
+        if chance <= AutoDodgeChance then
+            local randomT = math.random(5, 30) / 100
+            task.spawn(function()
+            task.wait(randomT)
+                local args = { buffer.fromstring("\001j\222\169\220|O\218A"), {} }
+             game:GetService("ReplicatedStorage"):WaitForChild("ZAP"):WaitForChild("COMBAT_RELIABLE"):FireServer(unpack(args))
+             end)
+        else
+            WindUI:Notify({
+                Title = "Failed To Dodge!",
+                Content = chance .. " > " .. AutoDodgeChance .. ", compared by Dodging Chance.",
+                Icon = "warning",
+                Duration = 1.5
+            })
+        end
+    end
+end)
+
+local highPingNotified = false
+local lastPingCheck = 0
+
+RunService.Heartbeat:Connect(function()
+    if not lp or not lp:IsDescendantOf(game) then return end
+    
+    local currentTime = tick()
+    if currentTime - lastPingCheck > 2 then
+        lastPingCheck = currentTime
+        local ping = game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+        
+        if ping > 300 and not highPingNotified then
+            WindUI:Notify({
+                Title = "High Ping!",
+                Content = "High ping detected, features may work incorrectly.",
+                Icon = "warning",
+                Duration = 3
+            })
+            highPingNotified = true
+        end
+    end
+    
+    local gui = lp:FindFirstChildOfClass("PlayerGui")
+    if not gui then return end
+    
+    local slapGameUI = gui:FindFirstChild("SlapGameUI")
+    if not slapGameUI then return end
+    
+    local inGameHUD = slapGameUI:FindFirstChild("InGameHUD")
+    if not inGameHUD then
+        inGameHUD = slapGameUI:FindFirstChild("InGameHUD_Mobile")
+    end
+    
+    if not inGameHUD then return end
+    
+    local frame = inGameHUD:FindFirstChild("HeavyweightSlider")
+    if not frame or not frame:IsA("Frame") or not frame.Visible then return end
+    
+    local spot = frame:FindFirstChild("Spot")
+    local marker = frame:FindFirstChild("Marker")
+    if not spot or not marker or not spot.Visible or not marker.Visible then return end
+    
+    local battleOptions = inGameHUD:FindFirstChild("BattleOptions")
+    if not battleOptions then return end
+    
+    local container = battleOptions:FindFirstChild("Container")
+    if not container then return end
+    
+    local slap = container:FindFirstChild("Slap") or container:FindFirstChild("slap")
+    if not slap or not slap.Visible then return end
+    
+    local mPos = marker.AbsolutePosition
+    local mSize = marker.AbsoluteSize
+    local sPos = spot.AbsolutePosition
+    local sSize = spot.AbsoluteSize
+    
+    local markerInSpot = mPos.X >= sPos.X and mPos.X + mSize.X <= sPos.X + sSize.X and mPos.Y >= sPos.Y and mPos.Y + mSize.Y <= sPos.Y + sSize.Y
+    
+    if markerInSpot and AutoHeavyweightToggle then
+        local slapPos = slap.AbsolutePosition
+        local slapSize = slap.AbsoluteSize
+        local clickX = slapPos.X + slapSize.X/2
+        local clickY = slapPos.Y + slapSize.Y/2
+        
+        task.spawn(function()
+            VIM:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+            VIM:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+            task.wait(0.05)
+        end)
+    end
+end)
