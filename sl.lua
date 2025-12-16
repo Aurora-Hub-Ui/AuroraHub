@@ -39,7 +39,7 @@ local function getTag(name)
 end
 
 local discordLink = "https://discord.gg/QmvpbPdw9J"
-setclipboard(discordLink)
+if setclipboard then setclipboard(discordLink) end
 
 if blacklist[lp.UserId] then
     lp:Kick("Exploiting")
@@ -99,7 +99,7 @@ local TabHandles = {
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "14.12.25\n[+] Randomized Buffers (Premium, No Detections)\n[+] Improve Auto Dodge\n- Supported Auto Dodge: Slap, Ninja, Swap, Heavyweight, Bat.\n\n13.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
+    Desc = "16.12.25\n[/] Improved Auto Dodge (Bat)\n[/] Fixed Bugs\n\n14.12.25\n[+] Randomized Buffers (Premium, No Detections)\n[/] Improve Auto Dodge\n- Supported Auto Dodge: Slap, Ninja, Swap, Heavyweight, Bat.\n\n13.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
     Locked = false,
     Buttons = {
         {
@@ -463,7 +463,7 @@ workspace.DescendantAdded:Connect(function(obj)
     local container = battleOptions and battleOptions:FindFirstChild("Container")
     local feint = container and (container:FindFirstChild("Feint") or container:FindFirstChild("feint"))
     
-    if obj:IsA("Sound") and (obj.SoundId:find("71441046303493") or obj.SoundId:find("74444335852537") or obj.SoundId:find("110521080732746") or obj.SoundId:find("124228381910843")) and AutoDodgeToggle and feint and not feint.Visible then
+    if obj:IsA("Sound") and (obj.SoundId:find("71441046303493") or obj.SoundId:find("74444335852537") or obj.SoundId:find("110521080732746") or obj.SoundId:find("124228381910843") or obj.SoundId:find("132891780242917")) and AutoDodgeToggle and feint and not feint.Visible then
         local chance = math.random(0, 99)
         if chance <= AutoDodgeChance then
             local randomT = math.random(5, 30) / 100
@@ -476,7 +476,8 @@ workspace.DescendantAdded:Connect(function(obj)
                     local premiumBuffers = {
                         buffer.fromstring("\001;\140\017R\160O\218A"),
                         buffer.fromstring("\001.\174vI\160O\218A"), 
-                        buffer.fromstring("\001|\r\195o\160O\218A")
+                        buffer.fromstring("\001|\r\195o\160O\218A"),
+                        buffer.fromstring("\001j\222\169\220|O\218A")
                     }
                     bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
                 else
@@ -489,7 +490,7 @@ workspace.DescendantAdded:Connect(function(obj)
             WindUI:Notify({
                 Title = "Failed To Dodge!",
                 Content = chance .. " > " .. AutoDodgeChance .. ", compared by Dodging Chance.",
-                Icon = "danger",
+                Icon = "alert",
                 Duration = 1.5
             })
         end
@@ -528,7 +529,7 @@ local function startBATLoop()
 end
 
 RunService.Heartbeat:Connect(function()
-    if not lp or not lp:IsDescendantOf(game) then return end
+    if not lp then return end
     
     local currentTime = tick()
     if currentTime - lastPingCheck > 2 then
@@ -539,10 +540,39 @@ RunService.Heartbeat:Connect(function()
             WindUI:Notify({
                 Title = "High Ping!",
                 Content = "High ping detected, features may work incorrectly.",
-                Icon = "danger",
+                Icon = "alert",
                 Duration = 3
             })
             highPingNotified = true
+        end
+    end
+    
+    local character = lp.Character
+    if character and AutoDodgeToggle then
+        local head = character:FindFirstChild("Head")
+        if head then
+            for _, bat in pairs(workspace:GetDescendants()) do
+                if bat.Name == "Bat" and bat:IsA("Model") then
+                    local batPart = bat.PrimaryPart or bat:FindFirstChildWhichIsA("BasePart")
+                    if batPart and (head.Position - batPart.Position).Magnitude <= 2 then
+                        local bufferToUse
+                        if getTag(lp.Name) == "[ PREMIUM ]" then
+                            local premiumBuffers = {
+                                buffer.fromstring("\001;\140\017R\160O\218A"),
+                                buffer.fromstring("\001.\174vI\160O\218A"), 
+                                buffer.fromstring("\001|\r\195o\160O\218A"),
+                            buffer.fromstring("\001j\222\169\220|O\218A")
+                            }
+                            bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
+                        else
+                            bufferToUse = buffer.fromstring("\001j\222\169\220|O\218A")
+                        end
+                        
+                        game:GetService("ReplicatedStorage"):WaitForChild("ZAP"):WaitForChild("COMBAT_RELIABLE"):FireServer(bufferToUse, {})
+                        break
+                    end
+                end
+            end
         end
     end
     
@@ -556,44 +586,7 @@ RunService.Heartbeat:Connect(function()
     if not inGameHUD then
         inGameHUD = slapGameUI:FindFirstChild("InGameHUD_Mobile")
     end
-    
     if not inGameHUD then return end
-    
-    if AutoBatToggle then
-        if not qteArea then
-            qteArea = inGameHUD:FindFirstChild("QTEArea")
-            if qteArea then
-                qteArea:GetPropertyChangedSignal("Visible"):Connect(function()
-                    local isVisible = qteArea.Visible
-                    
-                    if not wasQTEVisible and isVisible then
-                        startBATLoop()
-                    elseif wasQTEVisible and not isVisible then
-                        batLoopActive = false
-                    end
-                    
-                    wasQTEVisible = isVisible
-                end)
-                
-                wasQTEVisible = qteArea.Visible
-                
-                if qteArea.Visible then
-                    lastBatFire = tick()
-                    startBATLoop()
-                end
-            end
-        else
-            local isVisible = qteArea.Visible
-            
-            if not wasQTEVisible and isVisible and not batLoopActive then
-                startBATLoop()
-            elseif wasQTEVisible and not isVisible and batLoopActive then
-                batLoopActive = false
-            end
-            
-            wasQTEVisible = isVisible
-        end
-    end
     
     local frame = inGameHUD:FindFirstChild("HeavyweightSlider")
     if not frame or not frame:IsA("Frame") or not frame.Visible then return end
