@@ -58,7 +58,7 @@ local function getTag(name)
 end
 
 local discordLink = "https://discord.gg/QmvpbPdw9J"
---setclipboard(discordLink)
+if setclipboard then setclipboard(discordLink) end
 
 if blacklist[lp.UserId] then
     lp:Kick("Exploiting")
@@ -124,7 +124,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -795,28 +795,30 @@ local function AutoShoot()
 
     local button = controls:FindFirstChild("Gui-mob")
     if not button or not (button:IsA("TextButton") or button:IsA("ImageButton")) then return end
-
+    
     if facingLoop then 
         facingLoop:Disconnect() 
         facingLoop = nil 
     end
-
+    
     facingLoop = RunService.RenderStepped:Connect(function()
-    if not Autoshoot then return end
-
-    local target = getNearestTarget()
-    if target then
-        faceTarget(target)
-    end
+        if not Autoshoot then 
+            facingLoop:Disconnect()
+            facingLoop = nil
+            return 
+        end
+        
+        local target = getNearestTarget()
+        if target then
+            faceTarget(target)
+        end
     end)
-
+    
     task.delay(0.5, function()
-        if Autoshoot and button then
+        if Autoshoot and button and facingLoop then
             pressSpecialButton("Gui-mob")
-            if facingLoop then
-                facingLoop:Disconnect()
-                facingLoop = nil
-            end
+            facingLoop:Disconnect()
+            facingLoop = nil
         end
     end)
 end
@@ -1402,14 +1404,6 @@ local OneTapHandle = KillerSection:Toggle({
              end
        end
 })
-local ExpandHandle = KillerSection:Toggle({
-       Title = "Expand Survivors Hitboxes",
-       Desc = "Expands survivors hitboxes so you could hit them far away.",
-       Value = false,
-       Callback = function(state)
-             ExpandToggle = state
-       end
-})
 local AutoAimHandle = KillerSection:Toggle({
        Title = "Auto Aim Spear (Veil)",
        Desc = "Automatically aims spear to the closest survivor.",
@@ -1834,7 +1828,6 @@ TabHandles.Config:Input({
             configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
             configFile:Register("InfThingsHandle", InfThingsHandle)
             configFile:Register("OneTapHandle", OneTapHandle)
-            configFile:Register("ExpandHandle", ExpandHandle)
             configFile:Register("AntiSlowHandle", AntiSlowHandle)
             configFile:Register("GodModeHandle", GodModeHandle)
             configFile:Register("AntiGFailHandle", AntiGFailHandle)
@@ -1874,7 +1867,6 @@ if ConfigManager then
     configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
     configFile:Register("InfThingsHandle", InfThingsHandle)
     configFile:Register("OneTapHandle", OneTapHandle)
-    configFile:Register("ExpandHandle", ExpandHandle)
     configFile:Register("AntiSlowHandle", AntiSlowHandle)
     configFile:Register("GodModeHandle", GodModeHandle)
     configFile:Register("AntiGFailHandle", AntiGFailHandle)
@@ -1926,7 +1918,6 @@ if ConfigManager then
                 configFile:Register("AutoDropSetHandle", AutoDropSetHandle)
                 configFile:Register("InfThingsHandle", InfThingsHandle)
                 configFile:Register("OneTapHandle", OneTapHandle)
-                configFile:Register("ExpandHandle", ExpandHandle)
                 configFile:Register("AntiSlowHandle", AntiSlowHandle)
                 configFile:Register("GodModeHandle", GodModeHandle)
                 configFile:Register("AntiGFailHandle", AntiGFailHandle)
