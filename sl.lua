@@ -70,6 +70,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 220,
     ScrollBarEnabled = true
 })
+Window:SetToggleKey(Enum.KeyCode.K)
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
@@ -466,7 +467,7 @@ workspace.DescendantAdded:Connect(function(obj)
     if obj:IsA("Sound") and (obj.SoundId:find("71441046303493") or obj.SoundId:find("74444335852537") or obj.SoundId:find("110521080732746") or obj.SoundId:find("124228381910843") or obj.SoundId:find("132891780242917")) and AutoDodgeToggle and feint and not feint.Visible then
         local chance = math.random(0, 99)
         if chance <= AutoDodgeChance then
-            local randomT = math.random(5, 30) / 100
+            local randomT = math.random(5, 20) / 100
             
             task.spawn(function()
                 task.wait(randomT)

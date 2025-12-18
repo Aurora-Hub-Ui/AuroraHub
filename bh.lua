@@ -41,19 +41,6 @@ end
 
 updatePlayerList()
 
-game.Players.PlayerAdded:Connect(function(player)
-    table.insert(playerNames, player.Name)
-end)
-
-game.Players.PlayerRemoving:Connect(function(player)
-    for i, name in pairs(playerNames) do
-        if name == player.Name then
-            table.remove(playerNames, i)
-            break
-        end
-    end
-end)
-
 local function getTag(name)
     for _, v in ipairs(premium_users) do
         if v == name then
@@ -64,7 +51,7 @@ local function getTag(name)
 end
 
 local discordLink = "https://discord.gg/QmvpbPdw9J"
-setclipboard(discordLink)
+if setclipboard then setclipboard(discordLink) end
 
 if blacklist[lp.UserId] then
     lp:Kick("Exploiting")
@@ -111,6 +98,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 220,
     ScrollBarEnabled = true
 })
+Window:SetToggleKey(Enum.KeyCode.K)
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
@@ -139,7 +127,7 @@ local TabHandles = {
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "7.11.25\n[+] Brookhaven",
+    Desc = "18.12.25\n[/] Fixed Lags Every Second\n\n7.11.25\n[+] Brookhaven",
     Locked = false,
     Buttons = {
         {
@@ -515,14 +503,6 @@ end)
 
 task.spawn(function()
     while true do
-        task.wait(1)
-        TrollingTarget:Refresh(playerNames)
-        TeleportsTarget:Refresh(playerNames)
-    end
-end)
-
-task.spawn(function()
-    while true do
         task.wait(0.02)
         if FlingToggle then
             fling()
@@ -645,6 +625,23 @@ if ConfigManager then
         end)
     end
 end
+
+game.Players.PlayerAdded:Connect(function(player)
+    table.insert(playerNames, player.Name)
+    TrollingTarget:Refresh(playerNames)
+    TeleportsTarget:Refresh(playerNames)
+end)
+
+game.Players.PlayerRemoving:Connect(function(player)
+    for i, name in pairs(playerNames) do
+        if name == player.Name then
+            table.remove(playerNames, i)
+            TrollingTarget:Refresh(playerNames)
+            TeleportsTarget:Refresh(playerNames)
+            break
+        end
+    end
+end)
 
 while task.wait(0.02) do
   if antiFlingToggle then

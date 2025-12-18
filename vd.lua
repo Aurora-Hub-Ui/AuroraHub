@@ -93,6 +93,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 220,
     ScrollBarEnabled = true
 })
+Window:SetToggleKey(Enum.KeyCode.K)
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
@@ -124,7 +125,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "18.12.25\n[+] Expand Killer Hitboxes (flashlight)[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -1275,7 +1276,6 @@ local function enableHitboxDesync()
         local newCFrame = desyncT.loc * offset
         root.CFrame = newCFrame
         
-        RunService.RenderStepped:Wait()
         root.CFrame = desyncT.loc
     end)
     
@@ -1319,6 +1319,7 @@ local DesyncHandle = TabHandles.Universal:Toggle({
     Desc = "Use for better hitboxes or for faking position.",
     Value = false,
     Callback = function(state)
+      task.spawn(function()
         if not setfflag then
             warn("DESYNC NOT SUPPORTED IN YOUR EXECUTOR.")
             return
@@ -1333,13 +1334,12 @@ local DesyncHandle = TabHandles.Universal:Toggle({
             if state then
                 enableHitboxDesync()
             else
+                Window:Close()
+                task.wait(0.1)
                 disableHitboxDesync()
             end
         end
-        
-        if state then
-        else
-        end
+      end)
     end
 })
 
@@ -1489,6 +1489,14 @@ GodModeHandle = SurvSection:Toggle({
             GodmodeToggle = false
         end
     end
+})
+local ExpandHitboxesHandle = SurvSection:Toggle({
+       Title = "Expand Killer Hitboxes",
+       Desc = "Expands killer hitboxes, useful with flashlight.",
+       Value = false,
+       Callback = function(state)
+             ExpandToggle = state
+       end
 })
 local AutoShootHandle = SurvSection:Toggle({
        Title = "Auto Attack",
@@ -1822,6 +1830,7 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
             configFile:Register("DesyncHandle", DesyncHandle)
             configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
             configFile:Register("AutoDropHandle", AutoDropHandle)
@@ -1861,6 +1870,7 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
     configFile:Register("DesyncHandle", DesyncHandle)
     configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
     configFile:Register("AutoDropHandle", AutoDropHandle)
@@ -1912,6 +1922,7 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
                 configFile:Register("DesyncHandle", DesyncHandle)
                 configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
                 configFile:Register("AutoDropHandle", AutoDropHandle)
@@ -2010,11 +2021,7 @@ task.spawn(function()
 			for _, obj in ipairs(gui:GetDescendants()) do
 				if obj.Name == "Blind" then
 					pcall(function()
-						if obj:IsA("Frame") then
-							obj.Visible = false
-						else
-							obj:Destroy()
-						end
+					        obj:Destroy()
 					end)
 				end
 			end
@@ -2026,8 +2033,9 @@ task.spawn(function()
 		end
 
 		if ExpandToggle then
+		    if not antiFlingToggle then antiFlingToggle = true end
 			for _, model in ipairs(workspace:GetChildren()) do
-				if model:IsA("Model") and model:FindFirstChild("Highlight-forsurvivor") then
+				if model:IsA("Model") and model:FindFirstChild("Killerost") then
 					for _, partName in ipairs({"HumanoidRootPart", "Head", "Right Arm", "Left Arm", "Torso"}) do
 						local part = model:FindFirstChild(partName)
 						if part and part:IsA("BasePart") then

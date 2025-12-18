@@ -36,7 +36,7 @@ local function getTag(name)
 end
 
 local discordLink = "https://discord.gg/QmvpbPdw9J"
-setclipboard(discordLink)
+if setclipboard then setclipboard(discordLink) end
 
 if blacklist[lp.UserId] then
     lp:Kick("Exploiting")
@@ -73,6 +73,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 220,
     ScrollBarEnabled = true
 })
+Window:SetToggleKey(Enum.KeyCode.K)
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
