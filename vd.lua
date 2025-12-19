@@ -176,7 +176,89 @@ local DamageAura = false
 local DesyncType = "Hitbox Improving"
 local Desync = false
 
-local colors = {
+local toggles = {
+    JasonPursuit = false,
+    JasonMist = false,
+    StalkerEvolve = false,
+    StalkerStage = false,
+    Masked = false
+}
+
+local function getKiller()
+    local weapon = character:FindFirstChild("Weapon")
+    if not weapon then return nil end
+
+    local rightArm = weapon:FindFirstChild("Right Arm")
+
+    if rightArm and rightArm:FindFirstChild("Machete") then
+        if rightArm and rightArm.Machete:FindFirstChild("pCube4_knife_0") then
+            return "Jeff"
+        else
+            return "Jason"
+        end
+
+    elseif rightArm and rightArm:FindFirstChild("Knife") then
+        return "Stalker"
+
+    elseif weapon:FindFirstChild("Chainsaw") then
+        return "Masked"
+    end
+
+    return nil
+end
+
+local function hookButton(btn)
+    btn.MouseButton1Down:Connect(function()
+        local killer = getKiller()
+        if not killer then return end
+        
+        if btn.Name == "attack" and noCdEnabled then
+            game.ReplicatedStorage.Remotes.Attacks.BasicAttack:FireServer()
+        end
+        
+        if killer == "Jason" then
+            if btn.Name == "move1" then
+                toggles.JasonPursuit = not toggles.JasonPursuit
+                game.ReplicatedStorage.Remotes.Killers.Jason.Pursuit:FireServer(toggles.JasonPursuit)
+                if toggles.JasonPursuit then
+                    local hum = (lp.Character or lp.CharacterAdded:Wait()):WaitForChild("Humanoid")
+                    local anim = Instance.new("Animation")
+                    anim.AnimationId = "rbxassetid://125224839697689"
+                    hum:LoadAnimation(anim):Play()
+                end
+            elseif btn.Name == "move2" then
+                toggles.JasonMist = not toggles.JasonMist
+                game.ReplicatedStorage.Remotes.Killers.Jason.LakeMist:FireServer(toggles.JasonMist)
+            end
+
+        elseif killer == "Jeff" then
+            if btn.Name == "move1" then
+                game.ReplicatedStorage.Remotes.Killers.Killer.ActivatePower:FireServer()
+            end
+
+        elseif killer == "Stalker" then
+            if btn.Name == "move1" then
+                toggles.StalkerEvolve = not toggles.StalkerEvolve
+                game.ReplicatedStorage.Remotes.Killers.Stalker.EvolveStage:FireServer(toggles.StalkerStage and 2 or false)
+            elseif btn.Name == "move2" then
+                toggles.StalkerStage = not toggles.StalkerStage
+            end
+
+        elseif killer == "Masked" then
+            if btn.Name == "move1" then
+                if toggles.Masked then
+                game.ReplicatedStorage.Remotes.Killers.Masked.Deactivatepower:FireServer()
+                    toggles.Masked = false
+                    task.wait(2)
+                end
+                game.ReplicatedStorage.Remotes.Killers.Masked.Activatepower:FireServer(chosenMapped)
+                toggles.Masked = true
+            end
+        end
+    end)
+end
+
+--[[local colors = {
     player = Color3.fromRGB(0, 255, 0),
     killer = Color3.fromRGB(255, 0, 0),
     generator = Color3.fromRGB(255, 255, 0),
@@ -187,35 +269,6 @@ local function contains(tbl, val)
     if not tbl then return false end
     for _, v in ipairs(tbl) do
         if v == val then return true end
-    end
-    return false
-end
-
-local function isPlayerObject(obj)
-    local child = obj:FindFirstChild("Highlight-forsurvivor")
-    return child and child:IsA("LocalScript")
-end
-
-local function isKillerObject(obj)
-    local killer1 = obj:FindFirstChild("Killerost")
-    local killer2 = obj:FindFirstChild("Lookscriptkiller")
-    return (killer1 and killer1:IsA("LocalScript")) or (killer2 and killer2:IsA("LocalScript"))
-end
-
-local function isGenerator(obj)
-    if obj:IsA("Model") and obj.Name == "Generator" then
-        local hitbox = obj:FindFirstChild("HitBox")
-        return hitbox and hitbox:IsA("BasePart")
-    end
-    return false
-end
-
-local function isPumpkin(obj)
-    if obj:IsA("Model") and obj.Parent.Name == "Pumpkins" then
-        if string.find(obj.Name, "Pumpkin") then
-            local hitbox = obj:FindFirstChild("HB")
-            return hitbox and hitbox:IsA("BasePart")
-        end
     end
     return false
 end
@@ -424,88 +477,6 @@ local function refreshAll()
     end
 end
 
-local toggles = {
-    JasonPursuit = false,
-    JasonMist = false,
-    StalkerEvolve = false,
-    StalkerStage = false,
-    Masked = false
-}
-
-local function getKiller()
-    local weapon = character:FindFirstChild("Weapon")
-    if not weapon then return nil end
-
-    local rightArm = weapon:FindFirstChild("Right Arm")
-
-    if rightArm and rightArm:FindFirstChild("Machete") then
-        if rightArm and rightArm.Machete:FindFirstChild("pCube4_knife_0") then
-            return "Jeff"
-        else
-            return "Jason"
-        end
-
-    elseif rightArm and rightArm:FindFirstChild("Knife") then
-        return "Stalker"
-
-    elseif weapon:FindFirstChild("Chainsaw") then
-        return "Masked"
-    end
-
-    return nil
-end
-
-local function hookButton(btn)
-    btn.MouseButton1Down:Connect(function()
-        local killer = getKiller()
-        if not killer then return end
-        
-        if btn.Name == "attack" and noCdEnabled then
-            game.ReplicatedStorage.Remotes.Attacks.BasicAttack:FireServer()
-        end
-        
-        if killer == "Jason" then
-            if btn.Name == "move1" then
-                toggles.JasonPursuit = not toggles.JasonPursuit
-                game.ReplicatedStorage.Remotes.Killers.Jason.Pursuit:FireServer(toggles.JasonPursuit)
-                if toggles.JasonPursuit then
-                    local hum = (lp.Character or lp.CharacterAdded:Wait()):WaitForChild("Humanoid")
-                    local anim = Instance.new("Animation")
-                    anim.AnimationId = "rbxassetid://125224839697689"
-                    hum:LoadAnimation(anim):Play()
-                end
-            elseif btn.Name == "move2" then
-                toggles.JasonMist = not toggles.JasonMist
-                game.ReplicatedStorage.Remotes.Killers.Jason.LakeMist:FireServer(toggles.JasonMist)
-            end
-
-        elseif killer == "Jeff" then
-            if btn.Name == "move1" then
-                game.ReplicatedStorage.Remotes.Killers.Killer.ActivatePower:FireServer()
-            end
-
-        elseif killer == "Stalker" then
-            if btn.Name == "move1" then
-                toggles.StalkerEvolve = not toggles.StalkerEvolve
-                game.ReplicatedStorage.Remotes.Killers.Stalker.EvolveStage:FireServer(toggles.StalkerStage and 2 or false)
-            elseif btn.Name == "move2" then
-                toggles.StalkerStage = not toggles.StalkerStage
-            end
-
-        elseif killer == "Masked" then
-            if btn.Name == "move1" then
-                if toggles.Masked then
-                game.ReplicatedStorage.Remotes.Killers.Masked.Deactivatepower:FireServer()
-                    toggles.Masked = false
-                    task.wait(2)
-                end
-                game.ReplicatedStorage.Remotes.Killers.Masked.Activatepower:FireServer(chosenMapped)
-                toggles.Masked = true
-            end
-        end
-    end)
-end
-
 local lR = 0
 local rl = 1
 
@@ -651,9 +622,263 @@ end
             for _, l in pairs(boxes[obj]) do l.Visible = false end
         end
     end
+end)]]
+
+local function isPlayerObject(obj)
+    local child = obj:FindFirstChild("Highlight-forsurvivor")
+    return child and child:IsA("LocalScript")
+end
+
+local function isKillerObject(obj)
+    local killer1 = obj:FindFirstChild("Killerost")
+    local killer2 = obj:FindFirstChild("Lookscriptkiller")
+    return (killer1 and killer1:IsA("LocalScript")) or (killer2 and killer2:IsA("LocalScript"))
+end
+
+local function isGenerator(obj)
+    if obj:IsA("Model") and obj.Name == "Generator" then
+        local hitbox = obj:FindFirstChild("HitBox")
+        return hitbox and hitbox:IsA("BasePart")
+    end
+    return false
+end
+
+local function isPumpkin(obj)
+    if obj:IsA("Model") and obj.Parent.Name == "Pumpkins" then
+        if string.find(obj.Name, "Pumpkin") then
+            local hitbox = obj:FindFirstChild("HB")
+            return hitbox and hitbox:IsA("BasePart")
+        end
+    end
+    return false
+end
+
+local function contains(tbl, val)
+    if not tbl or type(tbl) ~= "table" then return false end
+    for _, v in ipairs(tbl) do
+        if v == val then return true end
+    end
+    return false
+end
+
+local function getObjType(obj)
+    if not obj then return nil end
+    if obj:FindFirstChild("Highlight-forsurvivor") then return "Players" end
+    if obj:FindFirstChild("Killerost") or obj:FindFirstChild("Lookscriptkiller") then return "Killers" end
+    if obj.Name == "Generator" then return "Generators" end
+    if obj.Parent and obj.Parent.Name == "Pumpkins" then return "Pumpkins" end
+    return nil
+end
+
+local function passesFilter(obj)
+    local t = getObjType(obj)
+    return t and contains(selectedESPTypes, t)
+end
+
+local function getObjColor(obj)
+    local t = getObjType(obj)
+    if t == "Killers" then return Color3.fromRGB(255, 0, 0) end
+    if t == "Generators" then return Color3.fromRGB(255, 255, 0) end
+    if t == "Pumpkins" then return Color3.fromRGB(255, 165, 0) end
+    return Color3.fromRGB(0, 255, 0)
+end
+
+local function ensureHighlight(obj)
+    if not ESPHighlight then
+        if esp[obj] and esp[obj].highlight then
+            esp[obj].highlight:Destroy()
+            esp[obj].highlight = nil
+        end
+        return
+    end
+    
+    if not esp[obj].highlight then
+        local h = Instance.new("Highlight")
+        h.Adornee = obj
+        h.FillTransparency = 0.5
+        h.OutlineTransparency = 0
+        h.FillColor = getObjColor(obj)
+        h.OutlineColor = Color3.new(1, 1, 1)
+        h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        h.Parent = obj
+        esp[obj].highlight = h
+    end
+end
+
+local function ensureBillboard(obj)
+    if not (ESPNames or ESPStuds) then
+        if esp[obj].billboard then
+            esp[obj].billboard:Destroy()
+            esp[obj].billboard = nil
+        end
+        return
+    end
+
+    if not esp[obj].billboard then
+        local head = obj:FindFirstChild("Head") or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
+        if not head then return end
+
+        local b = Instance.new("BillboardGui")
+        b.Size = UDim2.new(0, 200, 0, 50)
+        b.Adornee = head
+        b.AlwaysOnTop = true
+        b.Parent = obj
+        
+        local n = Instance.new("TextLabel", b)
+        n.BackgroundTransparency = 1
+        n.Size = UDim2.new(1, 0, 0, 16)
+        n.Position = UDim2.new(0, 0, 0, -20)
+        n.Text = obj.Name
+        n.Font = Enum.Font.SourceSansBold
+        n.TextSize = 14
+        
+        local s = Instance.new("TextLabel", b)
+        s.BackgroundTransparency = 1
+        s.Size = UDim2.new(1, 0, 0, 14)
+        s.Position = UDim2.new(0, 0, 0, -5)
+        s.Font = Enum.Font.SourceSans
+        s.TextSize = 12
+
+        esp[obj].billboard = b
+        esp[obj].nameLabel = n
+        esp[obj].studsLabel = s
+    end
+end
+
+local function ensureTracer(obj)
+    if not ESPTracers then
+        if tracers[obj] then tracers[obj]:Remove() tracers[obj] = nil end
+        return
+    end
+    
+    if not tracers[obj] then
+        local L = Drawing.new("Line")
+        L.Thickness = 1
+        L.Transparency = 1
+        tracers[obj] = L
+    end
+end
+
+local function ensureBox(obj)
+    if not ESPBoxes then
+        if boxes[obj] then
+            for _, l in pairs(boxes[obj]) do l:Remove() end
+            boxes[obj] = nil
+        end
+        return
+    end
+
+    if not boxes[obj] then
+        boxes[obj] = {
+            tl = Drawing.new("Line"),
+            tr = Drawing.new("Line"),
+            bl = Drawing.new("Line"),
+            br = Drawing.new("Line")
+        }
+        for _, line in pairs(boxes[obj]) do
+            line.Thickness = 1
+            line.Transparency = 1
+        end
+    end
+end
+
+local function ensureAllFor(obj)
+    if not esp[obj] then esp[obj] = {} end
+    
+    ensureHighlight(obj)
+    ensureBillboard(obj)
+    ensureTracer(obj)
+    ensureBox(obj)
+end
+
+local function removeESP(obj)
+    local d = esp[obj]
+    if d then
+        if d.highlight then pcall(function() d.highlight:Destroy() end) end
+        if d.billboard then pcall(function() d.billboard:Destroy() end) end
+        esp[obj] = nil
+    end
+    if tracers[obj] then pcall(function() tracers[obj]:Remove() end) tracers[obj] = nil end
+    if boxes[obj] then
+        for _, l in pairs(boxes[obj]) do pcall(function() l:Remove() end) end
+        boxes[obj] = nil
+    end
+end
+
+local lR = 0
+local rl = 1.5
+
+RunService.RenderStepped:Connect(function()
+    if tick() - lR > rl then
+        for _, obj in ipairs(workspace:GetChildren()) do
+            if obj ~= lp.Character and passesFilter(obj) then
+                ensureAllFor(obj)
+            end
+        end
+        lR = tick()
+    end
+
+    local viewportSize = Camera.ViewportSize
+    local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+
+    for obj, data in pairs(esp) do
+        if not obj or not obj.Parent or not passesFilter(obj) then
+            removeESP(obj)
+            continue
+        end
+
+        local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("HitBox") or obj:FindFirstChild("HB") or obj.PrimaryPart
+        if not rootPart then continue end
+        
+        local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+        local isVisible = onScreen and screenPos.Z > 0
+
+        if tracers[obj] then
+            tracers[obj].Visible = isVisible and ESPTracers
+            if tracers[obj].Visible then
+                tracers[obj].Color = getObjColor(obj)
+                tracers[obj].From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
+                tracers[obj].To = Vector2.new(screenPos.X, screenPos.Y)
+            end
+        end
+
+        if data.billboard then
+            data.billboard.Enabled = isVisible and (ESPNames or ESPStuds)
+            if data.billboard.Enabled and myRoot then
+                if data.studsLabel then
+                    local dist = (myRoot.Position - rootPart.Position).Magnitude
+                    data.studsLabel.Text = math.floor(dist) .. "m"
+                    data.studsLabel.TextColor3 = getObjColor(obj)
+                end
+                if data.nameLabel then
+                    data.nameLabel.TextColor3 = getObjColor(obj)
+                end
+            end
+        end
+
+        if boxes[obj] then
+            local box = boxes[obj]
+            local showBox = isVisible and ESPBoxes
+            for _, line in pairs(box) do line.Visible = showBox end
+
+            if showBox then
+                local size = (1 / screenPos.Z) * 1000 
+                local w, h = size * 0.6, size
+                local x, y = screenPos.X, screenPos.Y
+                local col = getObjColor(obj)
+
+                box.tl.From = Vector2.new(x - w, y - h); box.tl.To = Vector2.new(x + w, y - h)
+                box.tr.From = Vector2.new(x + w, y - h); box.tr.To = Vector2.new(x + w, y + h)
+                box.br.From = Vector2.new(x + w, y + h); box.br.To = Vector2.new(x - w, y + h)
+                box.bl.From = Vector2.new(x - w, y + h); box.bl.To = Vector2.new(x - w, y - h)
+                for _, l in pairs(box) do l.Color = col end
+            end
+        end
+    end
 end)
 
-Workspace.ChildAdded:Connect(function(child) task.wait(0.5); refreshAll() end)
+Workspace.ChildAdded:Connect(function(child) task.wait(0.5); if passesFilter(child) then ensureAllFor(child) end 
+end)
 Workspace.ChildRemoved:Connect(function(child) removeESP(child) end)
 
 local function noclip()
