@@ -45,7 +45,7 @@ local blacklist = {
     [271036866] = true,
     [3137137279] = true
 }
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic" }
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
@@ -133,7 +133,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "18.12.25\n[+] Expand Killer Hitboxes (flashlight)[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -144,6 +144,7 @@ local updparagraph = Logs:Paragraph({
     }
 })
 
+local AutoEventToggle = false
 local AntiFlashlight = false
 local clicked = false
 local WalkToggle = false
@@ -285,10 +286,10 @@ local function isGenerator(obj)
     return false
 end
 
-local function isPumpkin(obj)
-    if obj:IsA("Model") and obj.Parent.Name == "Pumpkins" then
-        if string.find(obj.Name, "Pumpkin") then
-            local hitbox = obj:FindFirstChild("HB")
+local function isPresent(obj)
+    if obj:IsA("Model") and obj.Parent.Name == "Gifts" then
+        if string.find(obj.Name, "Gift") then
+            local hitbox = obj:FindFirstChild("GiftHandle")
             return hitbox and hitbox:IsA("BasePart")
         end
     end
@@ -310,7 +311,7 @@ local function getObjType(obj)
     if obj.Name == "Generator" or (obj.Parent and obj.Parent.Name == "Gens") then 
         return "Generators" 
     end
-    if obj.Parent and obj.Parent.Name == "Pumpkins" then return "Pumpkins" end
+    if string.find(obj.Name, "GiftHandle") and obj.Parent then return "Presents" end
     return nil
 end
 
@@ -323,7 +324,7 @@ local function getObjColor(obj)
     local t = getObjType(obj)
     if t == "Killers" then return Color3.fromRGB(255, 0, 0) end
     if t == "Generators" then return Color3.fromRGB(255, 255, 0) end
-    if t == "Pumpkins" then return Color3.fromRGB(255, 165, 0) end
+    if t == "Presents" then return Color3.fromRGB(1, 50, 32) end
     return Color3.fromRGB(0, 255, 0)
 end
 
@@ -469,9 +470,34 @@ RunService.RenderStepped:Connect(function()
                 
                 if obj.Name == "Gens" and obj:IsA("Folder") then
                     for _, gen in ipairs(obj:GetChildren()) do
-                        if passesFilter(gen) then
-                            ensureAllFor(gen)
-                        end
+                        if passesFilter(gen) then ensureAllFor(gen) end
+                    end
+                end
+            end
+
+            local chrisFolder = nil
+            for _, child in ipairs(mapf:GetChildren()) do
+                if string.find(string.lower(child.Name), "chris") then
+                    chrisFolder = child
+                    break
+                end
+            end
+
+            local giftsFolder = nil
+            if chrisFolder then
+                for _, child in ipairs(chrisFolder:GetChildren()) do
+                    if string.find(string.lower(child.Name), "gift") then
+                        giftsFolder = child
+                        break
+                    end
+                end
+            end
+
+            if giftsFolder then
+                for _, giftModel in ipairs(giftsFolder:GetChildren()) do
+                    local handle = giftModel:FindFirstChild("GiftHandle")
+                    if handle and passesFilter(handle) then
+                        ensureAllFor(handle)
                     end
                 end
             end
@@ -488,7 +514,7 @@ RunService.RenderStepped:Connect(function()
             continue
         end
 
-        local rootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("HitBox") or obj:FindFirstChild("HB") or obj.PrimaryPart
+        local rootPart = (obj.Name == "GiftHandle" and obj) or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("HitBox") or obj:FindFirstChild("HB") or obj.PrimaryPart
         if not rootPart then continue end
         
         local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
@@ -512,6 +538,7 @@ RunService.RenderStepped:Connect(function()
                     data.studsLabel.TextColor3 = getObjColor(obj)
                 end
                 if data.nameLabel then
+                    data.nameLabel.Text = (obj.Name == "GiftHandle") and "Present" or obj.Name
                     data.nameLabel.TextColor3 = getObjColor(obj)
                 end
             end
@@ -525,6 +552,8 @@ RunService.RenderStepped:Connect(function()
             if showBox then
                 local size = (1 / screenPos.Z) * 1000 
                 local w, h = size * 0.6, size
+                if obj.Name == "GiftHandle" then w = size * 0.4; h = size * 0.4 end
+                
                 local x, y = screenPos.X, screenPos.Y
                 local col = getObjColor(obj)
 
@@ -581,6 +610,66 @@ local function applyBypassSpeed()
 end
 task.spawn(applyBypassSpeed)
 local crossUI
+
+local function findFolderByKeyword(parent, keyword)
+    if not parent then return nil end
+    for _, child in ipairs(parent:GetChildren()) do
+        if string.find(string.lower(child.Name), string.lower(keyword)) then
+            return child
+        end
+    end
+    return nil
+end
+
+local countevent = 0
+local function autofarmcurrency()
+    task.spawn(function()
+        while AutoEventToggle do
+            if countevent > 8 then
+                warn("[AzureHub] Remote limit. Waiting 15 seconds to avoid detection...")
+                WindUI:Notify({ Title = "Azure Hub", Content = "Remote limit. Waiting 15 seconds to avoid detection...", Icon = "info", Duration = 15 })
+                task.wait(15)
+                countevent = 0
+                continue
+            end
+            local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+            local mapf = workspace:FindFirstChild("Map")
+            
+            if root and mapf then
+                local chris = findFolderByKeyword(mapf, "chris")
+                local treeFolder = findFolderByKeyword(chris, "tree")
+                
+                local treePart = nil
+                if treeFolder then
+                    local model = treeFolder:FindFirstChild("Model")
+                    treePart = model and model:FindFirstChild("Part")
+                end
+
+                local giftsFolder = findFolderByKeyword(chris, "gift")
+                local targetGift = giftsFolder and giftsFolder:FindFirstChild("GiftHandle", true)
+
+                if targetGift and treePart then
+                    root.CFrame = targetGift.CFrame
+                    task.wait(0.3)
+                    
+                    local remote = game:GetService("ReplicatedStorage"):FindFirstChild("gift", true)
+                    if remote then
+                        remote:FireServer(targetGift)
+                        countevent += 1
+                    end
+                    
+                    task.wait(0.1)
+                    root.CFrame = treePart.CFrame
+                    task.wait(1)
+                else
+                    task.wait(1)
+                end
+            else
+                task.wait(1)
+            end
+        end
+    end)
+end
 
 local function getNearestTarget()
     local nearest, nearestDist
@@ -1241,6 +1330,16 @@ local DesyncTypeHandle = TabHandles.Universal:Dropdown({
              DesyncType = option
        end
 })
+local AutoEventHandle = TabHandles.Universal:Toggle({
+       Title =  "Auto Farm Presents",
+       Value = false,
+       Callback = function(state)
+             AutoEventToggle = state
+             if state then
+                 autofarmcurrency()
+             end
+       end
+})
 
 local KillerSection = TabHandles.Killer:Section({ 
     Title = "Combat",
@@ -1454,8 +1553,8 @@ local AntiGFailHandle = SurvMiscSection:Toggle({
        end
 })
 local AntiHFailHandle = SurvMiscSection:Toggle({
-       Title = "Anti Fail Healing",
-       Desc = "Failing heal skill check will not do anything.",
+       Title = "Perfect Heal Check",
+       Desc = "Perfects heal check on appearing you still have to click not to fail.",
        Value = false,
        Callback = function(state)
              AntiHFail = state
@@ -1509,7 +1608,7 @@ TabHandles.Esp:Button({
 })
 local ESPDropdownHandle = TabHandles.Esp:Dropdown({
        Title =  "ESP's",
-       Values = { "Killers", "Players", "Generators" },
+       Values = { "Killers", "Players", "Generators", "Presents" },
        Value = { "" },
        Multi = true,
        AllowNone = true,
@@ -1718,6 +1817,7 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("AutoEventHandle", AutoEventHandle)
             configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
             configFile:Register("DesyncHandle", DesyncHandle)
             configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
@@ -1758,6 +1858,7 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("AutoEventHandle", AutoEventHandle)
     configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
     configFile:Register("DesyncHandle", DesyncHandle)
     configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
@@ -1810,6 +1911,7 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("AutoEventHandle", AutoEventHandle)
                 configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
                 configFile:Register("DesyncHandle", DesyncHandle)
                 configFile:Register("DesyncTypeHandle", DesyncTypeHandle)
