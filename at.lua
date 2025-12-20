@@ -42,7 +42,7 @@ local blacklist = {
   [71552399] = true
 }
 
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz" }
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic" }
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
