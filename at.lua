@@ -42,7 +42,7 @@ local blacklist = {
   [71552399] = true
 }
 
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter" }
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz" }
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
@@ -91,6 +91,15 @@ local Window = WindUI:CreateWindow({
 })
 Window:SetToggleKey(Enum.KeyCode.K)
 
+Window:EditOpenButton({
+    Title = "Open Azure Hub " .. getTag(lp.Name),
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
     WindUI:Notify({
@@ -99,7 +108,6 @@ Window:CreateTopbarButton("theme-switcher", "moon", function()
         Duration = 2
     })
 end, 990)
-Window:SetToggleKey(Enum.KeyCode.K)
 
 local Logs = Window:Tab({ Title = "|  Update Logs", Icon = "scroll-text" })
 Window:Divider()
