@@ -16,11 +16,6 @@ local function uCR(char)
     character = char
     root = character:WaitForChild("HumanoidRootPart", 5)
     hum = character:WaitForChild("Humanoid", 5)
-    if chaseSound then
-       chaseSound:Stop()
-	chaseSound:Destroy()
-	chaseSound = nil
-    end
 end
 
 uCR(lp.Character or lp.CharacterAdded:Wait())
@@ -329,7 +324,7 @@ local function autofarm()
                     if c:IsA("BasePart") and string.find(c.Name, "Coin_Server") then
                         local isDangerous = false
                         if AutoFarmAvoidToggle and currentMurderer then
-                            if (c.Position - currentMurderer.Position).Magnitude < 8 then
+                            if (c.Position - currentMurderer.Position).Magnitude < 15 then
                                 isDangerous = true
                             end
                         end
@@ -731,12 +726,33 @@ local AutoShootHandle = SheriffSection:Toggle({
         if state then autoshoot() end
     end
 })
-local PredictionHandle = SheriffSection:Toggle({
-    Title = "Auto Shoot Prediction?",
-    Desc = "Predicts murder movements, shoots at predicted position.",
+local PredictionHandle
+PredictionHandle = SheriffSection:Toggle({
+    Title = "Auto Shoot Prediction?" .. (getTag(lp.Name) == "[ FREEMIUM ]" and "(PREMIUM)" or ""),
+    Desc = "Predicts murder movements, shoots at predicted position. (OP, 100% KILLS)",
     Value = false,
     Callback = function(state)
-        PredictionToggle = state
+        if state then
+            for _, name in ipairs(premium_users) do
+                if lp.Name == name then
+                    PredictionToggle = true
+                    return
+                end
+            end
+
+            PredictionToggle = false
+            WindUI:Notify({
+                Title = "Premium Feature",
+                Content = "This feature is only for premium users, get premium in our discord server.",
+                Icon = "info",
+                Duration = 3
+            })
+            if PredictionHandle then
+                PredictionHandle:Set(false)
+            end
+        else
+            PredictionToggle = false
+        end
     end
 })
 
