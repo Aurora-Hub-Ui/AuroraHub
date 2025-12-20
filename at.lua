@@ -55,7 +55,6 @@ local function getTag(name)
 end
 
 local discordLink = "https://discord.gg/QmvpbPdw9J"
-if setclipboard then setclipboard(discordLink) end
 
 if blacklist[lp.UserId] then
     lp:Kick("Exploiting")
