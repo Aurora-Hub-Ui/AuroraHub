@@ -592,29 +592,12 @@ local function clip()
 	end
 end
 
-local hooks = {
-    walkspeed = 16
-}
-
-local originalIndex
-originalIndex = hookmetamethod(game, "__index", function(self, property)
-    if not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(game.Players.LocalPlayer.Character) then
-        local p = property:lower()
-        if hooks[p] then 
-            return hooks[p]
-        end
-    end
-    return originalIndex(self, property)
-end)
-
 local function applyBypassSpeed()
     task.spawn(function()
         while task.wait(0.2) do
             if WalkToggle and game.Players.LocalPlayer.Character then
                 
                 if hum then
-                    hooks.walkspeed = currentSpeed 
-                    
                     for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
                         conn:Disable()
                     end
