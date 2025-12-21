@@ -592,38 +592,36 @@ local function clip()
 	end
 end
 
---[[local function applyBypassSpeed()
-    task.spawn(function()
-        while task.wait(0.05) do
-            if not WalkToggle then continue end
-            
-            if hum then
-                for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
-                    conn:Disable()
-                end
-                hum.WalkSpeed = currentSpeed
-            end
+local hooks = {
+    walkspeed = 16
+}
+
+local originalIndex
+originalIndex = hookmetamethod(game, "__index", function(self, property)
+    if not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(game.Players.LocalPlayer.Character) then
+        local p = property:lower()
+        if hooks[p] then 
+            return hooks[p]
         end
-    end)
-end
-applyBypassSpeed()]]
+    end
+    return originalIndex(self, property)
+end)
 
 local function applyBypassSpeed()
-    RunService.Heartbeat:Connect(function()
-        if not WalkToggle or not character then return end
-
-        if not hum or not root then return end
-
-        for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
-            conn:Disable()
-        end
-
-        local dir = hum.MoveDirection
-        if dir.Magnitude > 0 then
-            local move = Vector3.new(dir.X, 0, dir.Z).Unit * currentSpeed
-            root.AssemblyLinearVelocity = Vector3.new(move.X, root.AssemblyLinearVelocity.Y, move.Z)
-        else
-            root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
+    task.spawn(function()
+        while task.wait(0.2) do
+            if WalkToggle and game.Players.LocalPlayer.Character then
+                
+                if hum then
+                    hooks.walkspeed = currentSpeed 
+                    
+                    for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
+                        conn:Disable()
+                    end
+                    
+                    hum.WalkSpeed = currentSpeed
+                end
+            end
         end
     end)
 end
