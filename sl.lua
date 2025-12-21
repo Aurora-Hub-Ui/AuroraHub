@@ -107,7 +107,7 @@ local TabHandles = {
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "16.12.25\n[/] Improved Auto Dodge (Bat)\n[/] Fixed Bugs\n\n14.12.25\n[+] Randomized Buffers (Premium, No Detections)\n[/] Improve Auto Dodge\n- Supported Auto Dodge: Slap, Ninja, Swap, Heavyweight, Bat.\n\n13.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
+    Desc = "21.12.25[+] Auto Dodge: Demon Fox\n[/] Updated To Latest Data\n\n16.12.25\n[/] Improved Auto Dodge (Bat)\n[/] Fixed Bugs\n\n14.12.25\n[+] Randomized Buffers (Premium, No Detections)\n[/] Improve Auto Dodge\n- Supported Auto Dodge: Slap, Ninja, Swap, Heavyweight, Bat, Demon Fox.\n\n13.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
     Locked = false,
     Buttons = {
         {
@@ -474,7 +474,7 @@ workspace.DescendantAdded:Connect(function(obj)
     local container = battleOptions and battleOptions:FindFirstChild("Container")
     local feint = container and (container:FindFirstChild("Feint") or container:FindFirstChild("feint"))
     
-    if obj:IsA("Sound") and (obj.SoundId:find("71441046303493") or obj.SoundId:find("74444335852537") or obj.SoundId:find("110521080732746") or obj.SoundId:find("124228381910843") or obj.SoundId:find("132891780242917")) and AutoDodgeToggle and feint and not feint.Visible then
+    if obj:IsA("Sound") and (obj.SoundId:find("71441046303493") or obj.SoundId:find("74444335852537") or obj.SoundId:find("110521080732746") or obj.SoundId:find("124228381910843") or obj.SoundId:find("132891780242917") or obj.SoundId:find("78547033616792")) and AutoDodgeToggle and feint and not feint.Visible then
         local chance = math.random(0, 99)
         if chance <= AutoDodgeChance then
             local randomT = math.random(5, 20) / 100
