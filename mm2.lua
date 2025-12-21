@@ -26,7 +26,7 @@ end)
 local blacklist = {
     [1848960] = true
 }
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
@@ -669,8 +669,6 @@ local function applyBypassSpeed()
     task.spawn(function()
         while task.wait(0.2) do
             if not WalkToggle then continue end
-            local char = game.Players.LocalPlayer.Character
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
             
             if hum then
                 for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
