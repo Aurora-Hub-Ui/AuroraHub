@@ -592,12 +592,10 @@ local function clip()
 	end
 end
 
-local function applyBypassSpeed()
+--[[local function applyBypassSpeed()
     task.spawn(function()
-        while task.wait(0.2) do
+        while task.wait(0.05) do
             if not WalkToggle then continue end
-            local char = game.Players.LocalPlayer.Character
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
             
             if hum then
                 for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
@@ -605,6 +603,27 @@ local function applyBypassSpeed()
                 end
                 hum.WalkSpeed = currentSpeed
             end
+        end
+    end)
+end
+applyBypassSpeed()]]
+
+local function applyBypassSpeed()
+    RunService.Heartbeat:Connect(function()
+        if not WalkToggle or not character then return end
+
+        if not hum or not root then return end
+
+        for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
+            conn:Disable()
+        end
+
+        local dir = hum.MoveDirection
+        if dir.Magnitude > 0 then
+            local move = Vector3.new(dir.X, 0, dir.Z).Unit * currentSpeed
+            root.AssemblyLinearVelocity = Vector3.new(move.X, root.AssemblyLinearVelocity.Y, move.Z)
+        else
+            root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
         end
     end)
 end
