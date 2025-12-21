@@ -553,19 +553,22 @@ local function opendoors()
 end
 
 local function applyBypassSpeed()
-    while task.wait(0.2) do
-        if not WalkToggle then continue end
-        if not humanoid then continue end
-
-        for _, conn in ipairs(getconnections(humanoid:GetPropertyChangedSignal("WalkSpeed"))) do
-            conn:Disable()
+    task.spawn(function()
+        while task.wait(0.2) do
+            if not WalkToggle then continue end
+            local char = game.Players.LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            
+            if hum then
+                for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
+                    conn:Disable()
+                end
+                hum.WalkSpeed = currentSpeed
+            end
         end
-
-        humanoid.WalkSpeed = currentSpeed
-    end
+    end)
 end
-
-if currentSpeed ~= 33 then task.spawn(applyBypassSpeed) end
+applyBypassSpeed()
 
 local function noclip()
 	Clip = false
@@ -766,7 +769,6 @@ local WsSliderHandle = TabHandles.Player:Slider({
 	Step = 1,
 	Callback = function(Value)
 		currentSpeed = Value
-		applyBypassSpeed()
 	end
 })
 

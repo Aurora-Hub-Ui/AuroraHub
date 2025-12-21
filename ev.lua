@@ -485,30 +485,6 @@ spawn(function()
 end)
 
 local normalConn, emoteConn
-
---[[local function applyBypassSpeed()
-    if normalConn then normalConn:Disconnect() end
-
-    normalConn = RunService.Heartbeat:Connect(function()
-        if not WalkToggle or not character then return end
-
-        if not hum or not root then return end
-
-        for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
-            conn:Disable()
-        end
-
-        for _, obj in ipairs(root:GetChildren()) do
-            if obj:IsA("LinearVelocity") then
-                obj:Destroy()
-            end
-        end
-
-        local speed = root:FindFirstChild("EmoteSound") and emoteVSpeed or currentSpeed
-        hum.WalkSpeed = speed
-    end)
-end]]
-
 local function applyBypassSpeed()
     if normalConn then normalConn:Disconnect() end
 
@@ -517,19 +493,10 @@ local function applyBypassSpeed()
 
         if not hum or not root then return end
 
-        -- disable WS hooks
         for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
             conn:Disable()
         end
 
-        -- delete all LinearVelocity inside HRP
-        --[[for _, obj in ipairs(root:GetChildren()) do
-            if obj:IsA("LinearVelocity") then
-                obj:Destroy()
-            end
-        end]]
-
-        -- movement direction
         local dir = hum.MoveDirection
         if dir.Magnitude > 0 then
             local speed = root:FindFirstChild("EmoteSound") and emoteVSpeed or currentSpeed
@@ -540,7 +507,6 @@ local function applyBypassSpeed()
         end
     end)
 end
-
 applyBypassSpeed()
 
 local function createAutoJumpUI()
@@ -769,7 +735,6 @@ local WsSliderHandle = TabHandles.Player:Slider({
 	Value = { Min = 0, Max = 150, Default = 28 },
 	Callback = function(Value)
 		currentSpeed = Value
-		applyBypassSpeed()
 	end
 })
 local velocitySliderHandle = TabHandles.Player:Slider({
@@ -778,7 +743,6 @@ local velocitySliderHandle = TabHandles.Player:Slider({
 	Value = { Min = 0, Max = 300, Default = 28 },
 	Callback = function(Value)
 		emoteVSpeed = Value
-		applyBypassSpeed()
 	end
 })
 

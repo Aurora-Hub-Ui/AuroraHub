@@ -593,21 +593,23 @@ local function clip()
 end
 
 local function applyBypassSpeed()
-    while task.wait(0.2) do
-        if not WalkToggle then continue end
-
-        local char = lp.Character or lp.CharacterAdded:Wait()
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if not hum then continue end
-
-        for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
-            conn:Disable()
+    task.spawn(function()
+        while task.wait(0.2) do
+            if not WalkToggle then continue end
+            local char = game.Players.LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            
+            if hum then
+                for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
+                    conn:Disable()
+                end
+                hum.WalkSpeed = currentSpeed
+            end
         end
-
-        hum.WalkSpeed = currentSpeed
-    end
+    end)
 end
-task.spawn(applyBypassSpeed)
+applyBypassSpeed()
+
 local crossUI
 
 local function findFolderByKeyword(parent, keyword)
@@ -1330,7 +1332,8 @@ local DesyncTypeHandle = TabHandles.Universal:Dropdown({
        end
 })
 local AutoEventHandle = TabHandles.Universal:Toggle({
-       Title =  "Auto Farm Presents",
+       Title =  "Auto Farm Event",
+       Desc = "Farms existing event, current event: 🎄",
        Value = false,
        Callback = function(state)
              AutoEventToggle = state
@@ -1682,7 +1685,6 @@ local WsSliderHandle = TabHandles.Player:Slider({
 	Value = { Min = 16, Max = 100, Default = 16 },
 	Callback = function(Value)
 		currentSpeed = Value
-		applyBypassSpeed()
 	end
 })
 

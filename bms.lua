@@ -569,18 +569,22 @@ local function clip()
 end
 
 local function applyBypassSpeed()
-    while true do
-        task.wait(0.1)
-        if not WalkToggle then continue end
-        if not hum then continue end
-
-        for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
-            conn:Disable()
+    task.spawn(function()
+        while task.wait(0.2) do
+            if not WalkToggle then continue end
+            local char = game.Players.LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            
+            if hum then
+                for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
+                    conn:Disable()
+                end
+                hum.WalkSpeed = currentSpeed
+            end
         end
-
-        hum.WalkSpeed = currentSpeed
-    end
+    end)
 end
+applyBypassSpeed()
 
 local function fling()
     local movel = 0.1
@@ -643,7 +647,6 @@ local WsSliderHandle = TabHandles.Player:Slider({
 	Value = { Min = 16, Max = 100, Default = 16 },
 	Callback = function(Value)
 		currentSpeed = Value
-		applyBypassSpeed()
 	end
 })
 
