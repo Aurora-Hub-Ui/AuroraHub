@@ -52,7 +52,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local authOR = false
 for _, v in ipairs(testers) do
-    if v == name then
+    if v == lp.Name then
     authOR = true
     warn("[AzureHub] Tester authorized.")
     break
