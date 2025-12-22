@@ -45,6 +45,7 @@ local blacklist = {
     [271036866] = true,
     [3137137279] = true
 }
+local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
 local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local authOR = false
@@ -56,7 +57,6 @@ for _, v in ipairs(testers) do
     end
 end
 
-if not authOR then lp:Kick("not a tester") end
 if authOR then
     loadstring(game:HttpGet('https://raw.githubusercontent.com/azurelw/azurehub/refs/heads/main/vdtest.lua'))()
     return
