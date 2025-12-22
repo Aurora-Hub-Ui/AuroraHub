@@ -58,7 +58,7 @@ for _, v in ipairs(testers) do
 end
 
 if authOR then
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/azurelw/azurehub/refs/heads/main/vdtest.lua'))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/Aurora-Hub-Ui/azurehub/refs/heads/main/vdtest.lua'))()
     return
 end
 local function getTag(name)
