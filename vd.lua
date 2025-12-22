@@ -50,7 +50,7 @@ local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiter
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local authOR = false
 for _, v in ipairs(testers) do
-    if v == name then
+    if v == lp.Name then
     authOR = true
     warn("[AzureHub] Tester authorized.")
     break
