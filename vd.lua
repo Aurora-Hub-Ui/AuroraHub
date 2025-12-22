@@ -57,10 +57,10 @@ for _, v in ipairs(testers) do
     end
 end
 
-if authOR then
+--[[if authOR then
     loadstring(game:HttpGet('https://raw.githubusercontent.com/Aurora-Hub-Ui/azurehub/refs/heads/main/vdtest.lua'))()
     return
-end
+end]]
 local function getTag(name)
     for _, v in ipairs(premium_users) do
         if v == name then
