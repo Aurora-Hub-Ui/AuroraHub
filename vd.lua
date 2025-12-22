@@ -47,7 +47,20 @@ local blacklist = {
 }
 local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local authOR = false
+for _, v in ipairs(testers) do
+    if v == name then
+    authOR = true
+    warn("[AzureHub] Tester authorized.")
+    break
+    end
+end
 
+if not authOR then lp:Kick("not a tester") end
+if authOR then
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/azurelw/azurehub/refs/heads/main/vdtest.lua'))()
+    return
+end
 local function getTag(name)
     for _, v in ipairs(premium_users) do
         if v == name then
