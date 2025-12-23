@@ -11,7 +11,7 @@ local Camera = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
-if setfpscap then setfpscap(999) else warn("[AzureHub] setfpscap not supported. Script will not load.") end
+if setfpscap then setfpscap(999) else warn("[AzureHub] setfpscap not supported. FPS will-not be unlocked.") end
 if not Drawing then warn("[AzureHub] No drawing found. Tracers will not be shown.") end
 local character
 local hum
@@ -51,7 +51,7 @@ local blacklist = {
     [3137137279] = true
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local authOR = false
@@ -218,6 +218,9 @@ local targetanims = {
     [74968262036854] = true,
     [132817836308238] = true,
     [133963973694098] = true,
+    [98163597193511] = true,
+    [111920872708571] = true,
+    [106871536134254] = true,
 }
 
 local toggles = {
@@ -474,7 +477,6 @@ local function ensureBox(obj)
             line.Thickness = 1
             line.Transparency = 1
         end
-        print("added box")
     end
 end
 
@@ -503,59 +505,60 @@ end
 
 local lR = 0
 local rl = 1.5
-
 --RunService.RenderStepped:Connect(function()
 RunService.Heartbeat:Connect(function()
     if tick() - lR > rl then
-        for _, obj in ipairs(workspace:GetChildren()) do
-            if obj ~= lp.Character and passesFilter(obj) then
-                ensureAllFor(obj)
-            end
-        end
+        local map = workspace:FindFirstChild("Map")
+        local searchFolders = {workspace, map}
         
-        local mapf = workspace:FindFirstChild("Map")
-        if mapf then
-            for _, obj in ipairs(mapf:GetChildren()) do
-                if obj ~= lp.Character and passesFilter(obj) then
-                    ensureAllFor(obj)
-                end
-                
-                if obj.Name == "Gens" and obj:IsA("Folder") then
-                    for _, gen in ipairs(obj:GetChildren()) do
-                        if passesFilter(gen) then ensureAllFor(gen) end
-                    end
-                end
+        if map then
+            table.insert(searchFolders, map:FindFirstChild("Gens"))
+            table.insert(searchFolders, map:FindFirstChild("Rooftop"))
+            local rooftop = map:FindFirstChild("Rooftop")
+            if rooftop then
+                table.insert(searchFolders, rooftop:FindFirstChild("Nature"))
             end
 
             local chrisFolder = nil
-            for _, child in ipairs(mapf:GetChildren()) do
+            for _, child in ipairs(map:GetChildren()) do
                 if string.find(string.lower(child.Name), "chris") then
                     chrisFolder = child
                     break
                 end
             end
 
-            local giftsFolder = nil
             if chrisFolder then
+                local giftsFolder = nil
                 for _, child in ipairs(chrisFolder:GetChildren()) do
                     if string.find(string.lower(child.Name), "gift") then
                         giftsFolder = child
                         break
                     end
                 end
-            end
 
-            if giftsFolder then
-                for _, giftModel in ipairs(giftsFolder:GetChildren()) do
-                    local handle = giftModel:FindFirstChild("GiftHandle")
-                    if handle and passesFilter(handle) then
-                        ensureAllFor(handle)
+                if giftsFolder then
+                    for _, giftModel in ipairs(giftsFolder:GetChildren()) do
+                        local handle = giftModel:FindFirstChild("GiftHandle")
+                        if handle and passesFilter(handle) then
+                            ensureAllFor(handle)
+                        end
                     end
                 end
             end
         end
+
+        for _, folder in ipairs(searchFolders) do
+            if folder then
+                for _, obj in ipairs(folder:GetChildren()) do
+                    if obj ~= lp.Character and passesFilter(obj) then
+                        ensureAllFor(obj)
+                    end
+                end
+            end
+        end
+        
         lR = tick()
-    end
+    end 
 
     local viewportSize = Camera.ViewportSize
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
@@ -751,7 +754,7 @@ local function noclip()
 	if Noclip then Noclip:Disconnect() end
 	Noclip = RunService.Stepped:Connect(function()
 		if Clip == false and lp.Character then
-			for _, v in ipairs(lp.Character:GetDescendants()) do
+			for _, v in ipairs(lp.Character:GetChildren()) do --descen
 				if v:IsA("BasePart") and v.CanCollide then
 					v.CanCollide = false
 				end
@@ -1170,13 +1173,16 @@ local function createAimToggle()
     
     aimConn = game:GetService("RunService").RenderStepped:Connect(function()
         if not AutoAimToggle then
-            aimConn:Disconnect()
-            aimConn = nil
+            if aimConn then
+                aimConn:Disconnect()
+                aimConn = nil
+            end
             return
         end
         
         local closestPlayer = nil
         local minDist = math.huge
+        local myPos = root.Position
         
         for _, player in pairs(game.Players:GetPlayers()) do
             if player ~= lp and player.Character then
@@ -1187,7 +1193,7 @@ local function createAimToggle()
                 end
                 
                 if head then
-                    local dist = (head.Position - root.Position).Magnitude
+                    local dist = (head.Position - myPos).Magnitude
                     if dist < minDist then
                         closestPlayer = player
                         minDist = dist
@@ -1200,26 +1206,10 @@ local function createAimToggle()
             local head = closestPlayer.Character:FindFirstChild("Head")
             if head then
                 local headPos = head.Position
-                local myPos = root.Position
-
-                local flatDistance = (Vector3.new(headPos.X, 0, headPos.Z) - Vector3.new(myPos.X, 0, myPos.Z)).Magnitude
-
-                local heightOffset = 0
-                if flatDistance >= 50 then
-                    heightOffset = flatDistance * 1.2
-                elseif flatDistance >= 25 then
-                    heightOffset = flatDistance * 1.0
-                elseif flatDistance >= 10 then
-                    heightOffset = flatDistance * 0.5
-                else
-                    heightOffset = -2
-                end
-                
-                local targetHeightPos = Vector3.new(headPos.X, headPos.Y + heightOffset, headPos.Z)
 
                 root.CFrame = CFrame.lookAt(myPos, Vector3.new(headPos.X, myPos.Y, headPos.Z))
 
-                workspace.CurrentCamera.CFrame = CFrame.lookAt(workspace.CurrentCamera.CFrame.Position, targetHeightPos)
+                workspace.CurrentCamera.CFrame = CFrame.lookAt(workspace.CurrentCamera.CFrame.Position, headPos)
             end
         end
     end)
@@ -1253,7 +1243,7 @@ end
 
 local function createDropdown()
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "DropdownGUI"
+    ScreenGui.Name = "roblox"
     ScreenGui.Parent = game.CoreGui
 
     local chosenOption = "Select Mask"
@@ -1430,7 +1420,7 @@ RunService.Heartbeat:Connect(function()
 end)
 
 local function autodrop()
-    spawn(function()
+    task.spawn(function()
         while AutoDropToggle do
             task.wait(0.01)
             
@@ -1438,12 +1428,28 @@ local function autodrop()
             local shortestDistance = 10
             local rootPos = root.Position
             
-            for _, obj in pairs(workspace.Map:GetDescendants()) do
-                if obj.Name == "Palletwrong" then
-                    local distance = (obj:GetPivot().Position - rootPos).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        nearestPallet = obj
+            local map = workspace:FindFirstChild("Map")
+            local searchFolders = {}
+            
+            if map then
+                table.insert(searchFolders, map)
+                local rooftop = map:FindFirstChild("Rooftop")
+                if rooftop then
+                    local nature = rooftop:FindFirstChild("Nature")
+                    if nature then
+                        table.insert(searchFolders, nature)
+                    end
+                end
+            end
+            
+            for _, folder in ipairs(searchFolders) do
+                for _, obj in ipairs(folder:GetChildren()) do
+                    if obj.Name == "Palletwrong" then
+                        local distance = (obj:GetPivot().Position - rootPos).Magnitude
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            nearestPallet = obj
+                        end
                     end
                 end
             end
@@ -1452,7 +1458,7 @@ local function autodrop()
                 local nearestPalletPoint = nil
                 local closestPointDistance = math.huge
                 
-                for _, point in pairs(nearestPallet:GetDescendants()) do
+                for _, point in pairs(nearestPallet:GetChildren()) do
                     if point:IsA("BasePart") and point.Name == "PalletPoint" then
                         local distance = (point.Position - rootPos).Magnitude
                         if distance < closestPointDistance then
@@ -1465,9 +1471,9 @@ local function autodrop()
                 if nearestPalletPoint then
                     for _, obj in pairs(workspace:GetChildren()) do
                         if isKillerObject(obj) and obj ~= character then
-                            for _, killerPart in pairs(obj:GetDescendants()) do
+                            for _, killerPart in pairs(obj:GetChildren()) do
                                 if killerPart:IsA("BasePart") then
-                                    for _, palletPart in pairs(nearestPallet:GetDescendants()) do
+                                    for _, palletPart in pairs(nearestPallet:GetChildren()) do
                                         if palletPart:IsA("BasePart") then
                                             local localPos = palletPart.CFrame:PointToObjectSpace(killerPart.Position)
                                             local partSize = palletPart.Size
@@ -1737,7 +1743,7 @@ local OneTapHandle = KillerSection:Toggle({
        end
 })
 local AutoAimHandle = KillerSection:Toggle({
-       Title = "Auto Aim Spear (Veil)",
+       Title = "Auto Aim Spear (Veil, BETA)",
        Desc = "Automatically aims spear to the closest survivor.",
        Value = false,
        Callback = function(state)
@@ -2130,7 +2136,7 @@ local antiFlingHandle = TabHandles.Misc:Toggle({
         if not state then
             for _, plr in ipairs(Players:GetPlayers()) do
                 if plr ~= lp and plr.Character then
-                    for _, part in ipairs(plr.Character:GetDescendants()) do
+                    for _, part in ipairs(plr.Character:GetChildren()) do -- descen
                         if part:IsA("BasePart") then
                             part.CanCollide = true
                         end
@@ -2386,7 +2392,7 @@ task.spawn(function()
 		if RemoveClothingsToggle then
 		    for _, pl in ipairs(game.Workspace:GetChildren()) do
 		        if pl:FindFirstChild("spearmanager") then
-		            for _, item in ipairs(pl:GetDescendants()) do
+		            for _, item in ipairs(pl:GetChildren()) do
 		                if item:IsA("BasePart") and string.lower(item.Name):find("hat") then item:Destroy() end
 		            end
 		        end
@@ -2394,8 +2400,10 @@ task.spawn(function()
 		end
 
 		if AntiFlashlight and gui then
-			for _, obj in ipairs(gui:GetDescendants()) do
-				if obj.Name == "Blind" then
+		       local mob = gui:FindFirstChild("Slasher-mob") or gui:FindFirstChild("Masked-mob") or gui:FindFirstChild("Hidden-mob")
+			if mob then
+			       local Blind = mob:FindFirstChild("Blind")
+			       if Blind then
 					pcall(function()
 					        obj:Destroy()
 					end)
@@ -2410,7 +2418,7 @@ task.spawn(function()
 
 		if ExpandToggle then
 			for _, model in ipairs(workspace:GetChildren()) do
-				if model:IsA("Model") and model:FindFirstChild("Killerost") then
+				if model:IsA("Model") and model:FindFirstChild("Killerost") and model ~= character then
 					for _, partName in ipairs({"HumanoidRootPart"}) do
 						local part = model:FindFirstChild(partName)
 						if part and part:IsA("BasePart") then
@@ -2496,7 +2504,7 @@ while task.wait(0.02) do
   if antiFlingToggle then
      for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= lp and plr.Character then
-            for _, part in ipairs(plr.Character:GetDescendants()) do
+            for _, part in ipairs(plr.Character:GetChildren()) do --descen
                 if part:IsA("BasePart") then
                     part.CanCollide = false
                 end

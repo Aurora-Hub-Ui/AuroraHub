@@ -26,7 +26,7 @@ lp.CharacterAdded:Connect(function(newChar)
 end)
 
 local blacklist = {"Tatlis"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
@@ -150,7 +150,7 @@ local function noclip()
 	if Noclip then Noclip:Disconnect() end
 	Noclip = RunService.Stepped:Connect(function()
 		if Clip == false and lp.Character then
-			for _, v in ipairs(lp.Character:GetDescendants()) do
+			for _, v in ipairs(lp.Character:GetChildren()) do
 				if v:IsA("BasePart") and v.CanCollide then
 					v.CanCollide = false
 				end
@@ -293,7 +293,7 @@ local antiFlingHandle = TabHandles.Misc:Toggle({
         if not state then
             for _, plr in ipairs(Players:GetPlayers()) do
                 if plr ~= lp and plr.Character then
-                    for _, part in ipairs(plr.Character:GetDescendants()) do
+                    for _, part in ipairs(plr.Character:GetChildren()) do
                         if part:IsA("BasePart") then
                             part.CanCollide = true
                         end
