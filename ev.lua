@@ -70,7 +70,7 @@ local blacklist = {
     [721993047] = true
 }
 
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
@@ -103,9 +103,18 @@ local bannedRanks = {
     ["Main Developer"] = true,
     ["Group Owner"] = true
 }
-local rankName = lp:GetRoleInGroup(5693735)
-if bannedRanks[rankName] then
-    lp:Kick("Exploiting")
+
+local success, rankName = pcall(function()
+    return lp:GetRoleInGroup(gid)
+end)
+
+if success and rankName then
+    if bannedRanks[rankName] then
+        lp:Kick("Exploiting")
+        return 
+    end
+else
+    warn("[AzureHub] Failed to fetch group rank (HTTP Error), continuing...")
 end
 
 print("Loaded!\nAzureHub By Cat\nDiscord: https://discord.gg/QmvpbPdw9J")

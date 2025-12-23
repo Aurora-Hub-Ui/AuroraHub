@@ -7,7 +7,8 @@ local Camera = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
-
+if setfpscap then setfpscap(120) else warn("[AzureHub] setfpscap not supported. Script will not load.") end
+if not Drawing then warn("[AzureHub] No drawing found. Tracers will not be shown.") end
 local character
 local hum
 local root
@@ -46,8 +47,9 @@ local blacklist = {
     [3137137279] = true
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local authOR = false
 for _, v in ipairs(testers) do
     if v == lp.Name then
@@ -57,10 +59,8 @@ for _, v in ipairs(testers) do
     end
 end
 
---[[if authOR then
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/Aurora-Hub-Ui/azurehub/refs/heads/main/vdtest.lua'))()
-    return
-end]]
+if not authOR then lp:Kick("not a tester") end
+
 local function getTag(name)
     for _, v in ipairs(premium_users) do
         if v == name then
@@ -83,9 +83,18 @@ local bannedRanks = {
     ["Smiling Friends"] = true,
     ["rick"] = true
 }
-local rankName = lp:GetRoleInGroup(8818124)
-if bannedRanks[rankName] then
-    lp:Kick("Exploiting")
+
+local success, rankName = pcall(function()
+    return lp:GetRoleInGroup(gid)
+end)
+
+if success and rankName then
+    if bannedRanks[rankName] then
+        lp:Kick("Exploiting")
+        return 
+    end
+else
+    warn("[AzureHub] Failed to fetch group rank (HTTP Error), continuing...")
 end
 
 print("Loaded!\nAzureHub By Cat\nDiscord: https://discord.gg/QmvpbPdw9J")
@@ -145,7 +154,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Updated To Latest Data\n[/] Fixed New Detections\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "23.12.25\n[+] Invisibility\n[+] Auto Perfect Generator\n[+] Auto Perfect Heal\n[+] Potato Graphics (Boost FPS)\n[/] Improve Auto Parry (Works now, slightly improved)\n[/] Improve Auto Aim Veil (Still need to test, unstable)\n[/] Fix WalkSpeed Changer\n[/] Fix Hitbox Expander\n[/] Unlock FPS (built-in)\n[/] Fixed Lot Of Bugs (ex. script not loading)\n\n20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Updated To Latest Data\n[/] Fixed New Detections\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -156,6 +165,7 @@ local updparagraph = Logs:Paragraph({
     }
 })
 
+local InvisibilityToggle = false
 local AutoEventToggle = false
 local AntiFlashlight = false
 local clicked = false
@@ -196,6 +206,17 @@ local AutoDropSetToggle = false
 local DamageAura = false
 local DesyncType = "Hitbox Improving"
 local Desync = false
+local ParryDistance = 10
+
+local targetanims = {
+    [139369275981139] = true,
+    [111920872708571] = true,
+    [78935059863801] = true,
+    [78432063483146] = true,
+    [74968262036854] = true,
+    [132817836308238] = true,
+    [133963973694098] = true,
+}
 
 local toggles = {
     JasonPursuit = false,
@@ -319,11 +340,11 @@ end
 local function getObjType(obj)
     if not obj then return nil end
     if obj:FindFirstChild("Highlight-forsurvivor") then return "Players" end
-    if obj:FindFirstChild("Killerost") or obj:FindFirstChild("Lookscriptkiller") then return "Killers" end
+    if obj:FindFirstChild("Killerost") or obj:FindFirstChild("Lookscriptkiller") then return "Killers", obj end
     if obj.Name == "Generator" or (obj.Parent and obj.Parent.Name == "Gens") then 
-        return "Generators" 
+        return "Generators"
     end
-    if string.find(obj.Name, "GiftHandle") and obj.Parent then return "Presents" end
+    if string.find(obj.Name, "GiftHandle") and obj.Parent then return "Presents", obj.Parent end
     return nil
 end
 
@@ -335,7 +356,22 @@ end
 local function getObjColor(obj)
     local t = getObjType(obj)
     if t == "Killers" then return Color3.fromRGB(255, 0, 0) end
-    if t == "Generators" then return Color3.fromRGB(255, 255, 0) end
+    
+    if t == "Generators" then
+        local foundPoint = false
+        for _, child in ipairs(obj:GetChildren()) do
+            if string.find(child.Name, "GeneratorPoint") then
+                foundPoint = true
+                break
+            end
+        end
+        
+        if not foundPoint then
+            return Color3.fromRGB(0, 255, 0)
+        end
+        return Color3.fromRGB(255, 255, 0)
+    end
+    
     if t == "Presents" then return Color3.fromRGB(1, 50, 32) end
     return Color3.fromRGB(0, 255, 0)
 end
@@ -436,6 +472,7 @@ local function ensureBox(obj)
             line.Thickness = 1
             line.Transparency = 1
         end
+        print("added box")
     end
 end
 
@@ -465,7 +502,8 @@ end
 local lR = 0
 local rl = 1.5
 
-RunService.RenderStepped:Connect(function()
+--RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     if tick() - lR > rl then
         for _, obj in ipairs(workspace:GetChildren()) do
             if obj ~= lp.Character and passesFilter(obj) then
@@ -583,6 +621,129 @@ Workspace.ChildAdded:Connect(function(child) task.wait(0.5); if passesFilter(chi
 end)
 Workspace.ChildRemoved:Connect(function(child) removeESP(child) end)
 
+local IsInvisible = false
+local IsSettingUp = false
+local FakeCharacter, RealCharacter, Part
+
+local function protectGuis()
+    local pGui = lp:FindFirstChild("PlayerGui")
+    if pGui then
+        for _, gui in ipairs(pGui:GetChildren()) do
+            if gui:IsA("ScreenGui") then
+                gui.ResetOnSpawn = false
+            end
+        end
+    end
+end
+
+local function setupFakeCharacter()
+    if IsSettingUp then return end
+    IsSettingUp = true
+    
+    RealCharacter = lp.Character or lp.CharacterAdded:Wait()
+    RealCharacter.Archivable = true
+    
+    if FakeCharacter then FakeCharacter:Destroy() end
+    if Part then Part:Destroy() end
+
+    FakeCharacter = RealCharacter:Clone()
+    FakeCharacter.Name = "FakeCharacter"
+    
+    Part = Instance.new("Part")
+    Part.Anchored = true
+    Part.Size = Vector3.new(10, 1, 10)
+    Part.CFrame = CFrame.new(0, -500, 0)
+    Part.CanCollide = true
+    Part.Parent = workspace
+
+    FakeCharacter.Parent = workspace
+    
+    for _, v in ipairs(FakeCharacter:GetChildren()) do
+        if v:IsA("BasePart") then v.Transparency = 0.7 end
+    end
+    
+    for _, v in ipairs(RealCharacter:GetChildren()) do
+        if v:IsA("LocalScript") then
+            local c = v:Clone()
+            c.Disabled = true
+            c.Parent = FakeCharacter
+        end
+    end
+    
+    task.spawn(function()
+        while true do
+            if IsInvisible and RealCharacter and RealCharacter:FindFirstChild("HumanoidRootPart") then
+                RealCharacter.HumanoidRootPart.CFrame = Part.CFrame * CFrame.new(0, 5, 0)
+                RealCharacter.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+            end
+            task.wait(0.1)
+        end
+    end)
+    
+    IsSettingUp = false
+end
+
+local function enableInvis()
+    if IsInvisible or IsSettingUp then return end
+    
+    RealCharacter = lp.Character
+    protectGuis()
+
+    if not FakeCharacter then 
+        setupFakeCharacter() 
+        repeat task.wait() until FakeCharacter
+    end
+
+    local realRoot = RealCharacter:FindFirstChild("HumanoidRootPart")
+    local fakeRoot = FakeCharacter:FindFirstChild("HumanoidRootPart")
+    
+    if realRoot and fakeRoot then
+        local storedCF = realRoot.CFrame
+        realRoot.CFrame = fakeRoot.CFrame
+        fakeRoot.CFrame = storedCF
+        
+        realRoot.Anchored = true 
+        
+        RealCharacter.Humanoid:UnequipTools()
+        lp.Character = FakeCharacter
+        workspace.CurrentCamera.CameraSubject = FakeCharacter.Humanoid
+
+        for _, v in ipairs(FakeCharacter:GetChildren()) do
+            if v:IsA("LocalScript") then v.Disabled = false end
+        end
+
+        IsInvisible = true
+    end
+end
+
+local function disableInvis()
+    if not IsInvisible or IsSettingUp then return end
+
+    local realRoot = RealCharacter:FindFirstChild("HumanoidRootPart")
+    local fakeRoot = FakeCharacter:FindFirstChild("HumanoidRootPart")
+
+    if realRoot and fakeRoot then
+        local storedCF = fakeRoot.CFrame
+        fakeRoot.CFrame = realRoot.CFrame
+        realRoot.CFrame = storedCF
+        
+        realRoot.Anchored = false 
+        
+        FakeCharacter.Humanoid:UnequipTools()
+        lp.Character = RealCharacter
+        workspace.CurrentCamera.CameraSubject = RealCharacter.Humanoid
+
+        for _, v in ipairs(FakeCharacter:GetChildren()) do
+            if v:IsA("LocalScript") then v.Disabled = true end
+        end
+        for _, v in ipairs(RealCharacter:GetChildren()) do
+            if v:IsA("LocalScript") then v.Disabled = false end
+        end
+
+        IsInvisible = false
+    end
+end
+
 local function noclip()
 	Clip = false
 	if Noclip then Noclip:Disconnect() end
@@ -605,14 +766,33 @@ local function clip()
 	end
 end
 
+local indexhook
+local newindexhook
+
+indexhook = hookmetamethod(game, "__index", function(self, index)
+    if not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(lp.Character) then
+        if index == "WalkSpeed" then return 16 end
+    end
+    return indexhook(self, index)
+end)
+
+newindexhook = hookmetamethod(game, "__newindex", function(self, index, value)
+    if not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(lp.Character) then
+        if index == "WalkSpeed" then return end
+    end
+    return newindexhook(self, index, value)
+end)
+
 local function applyBypassSpeed()
     task.spawn(function()
-        while task.wait(0.2) do
-            if WalkToggle and game.Players.LocalPlayer.Character then
-                
+        while true do
+            task.wait(0.2) 
+            
+            if WalkToggle and lp.Character then
                 if hum then
-                    for _, conn in ipairs(getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))) do
-                        conn:Disable()
+                    local conns = getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))
+                    for i = 1, #conns do
+                        conns[i]:Disable()
                     end
                     
                     hum.WalkSpeed = currentSpeed
@@ -748,6 +928,68 @@ local function pressSpecialButton(args)
                 end
             end
         end
+    end
+end
+
+local GenConnection = nil
+local HealConnection = nil
+local genHitDone = false
+local healHitDone = false
+
+local function pressSpecialButton(args)
+    local pGui = lp:FindFirstChild("PlayerGui")
+    local survivor = pGui and pGui:FindFirstChild("Survivor-mob", true)
+    local button = survivor and survivor.Controls:FindFirstChild("action")
+    
+    if button and (button:IsA("TextButton") or button:IsA("ImageButton")) then
+        local conns = getconnections(button.MouseButton1Down)
+        for i = 1, #conns do
+            if conns[i].Function then conns[i].Function() end
+        end
+    end
+end
+
+local function autoperfectgen()
+    local pGui = lp:FindFirstChild("PlayerGui")
+    local checkGui = pGui and pGui:FindFirstChild("SkillCheckPromptGui") and pGui.SkillCheckPromptGui:FindFirstChild("Check")
+    
+    if checkGui and checkGui.Visible then
+        local line = checkGui:FindFirstChild("Line")
+        local goal = checkGui:FindFirstChild("Goal")
+        
+        if line and goal then
+            local currentRot = line.Rotation
+            local perfectStart = 104 + goal.Rotation
+            
+            if not genHitDone and currentRot >= (perfectStart + 1) and currentRot <= (perfectStart + 9) then
+                pressSpecialButton("action")
+                genHitDone = true
+            end
+        end
+    else
+        genHitDone = false
+    end
+end
+
+local function autoperfectheal()
+    local pGui = lp:FindFirstChild("PlayerGui")
+    local checkGui = pGui and pGui:FindFirstChild("SkillCheckPromptGui") and pGui.SkillCheckPromptGui:FindFirstChild("Check")
+    
+    if checkGui and checkGui.Visible then
+        local line = checkGui:FindFirstChild("Line")
+        local goal = checkGui:FindFirstChild("Goal")
+        
+        if line and goal then
+            local currentRot = line.Rotation
+            local perfectStart = 104 + goal.Rotation
+            
+            if not healHitDone and currentRot >= (perfectStart + 1) and currentRot <= (perfectStart + 9) then
+                pressSpecialButton("action")
+                healHitDone = true
+            end
+        end
+    else
+        healHitDone = false
     end
 end
 
@@ -921,48 +1163,67 @@ local function createAimToggle()
     ToggleButton.Active = true
     ToggleButton.Draggable = true
 
-    local function aim()
-        if aimConn then return end
+   local function aim()
+    if aimConn then return end
+    
+    aimConn = game:GetService("RunService").RenderStepped:Connect(function()
+        if not AutoAimToggle then
+            aimConn:Disconnect()
+            aimConn = nil
+            return
+        end
         
-        aimConn = game:GetService("RunService").RenderStepped:Connect(function()
-            if not AutoAimToggle then
-                aimConn:Disconnect()
-                aimConn = nil
-                return
-            end
-            
-            local closestPlayer = nil
-            local minDist = math.huge
-            
-            for _, player in pairs(game.Players:GetPlayers()) do
-                if player ~= lp and player.Character then
-                    local head = player.Character:FindFirstChild("Head")
-                    
-                    if player.Character:GetAttribute("IsHooked") or player.Character:GetAttribute("IsCarried") then
-                        continue
-                    end
-                    
-                    if head then
-                        local dist = (head.Position - root.Position).Magnitude
-                        if dist < minDist then
-                            closestPlayer = player
-                            minDist = dist
-                        end
-                    end
+        local closestPlayer = nil
+        local minDist = math.huge
+        
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= lp and player.Character then
+                local head = player.Character:FindFirstChild("Head")
+                
+                if player.Character:GetAttribute("IsHooked") or player.Character:GetAttribute("IsCarried") then
+                    continue
                 end
-            end
-            
-            if closestPlayer and closestPlayer.Character then
-                local head = closestPlayer.Character:FindFirstChild("Head")
+                
                 if head then
-                    local targetPos = head.Position
-
-                    root.CFrame = CFrame.lookAt(root.Position, Vector3.new(targetPos.X, root.Position.Y, targetPos.Z))
-                    workspace.CurrentCamera.CFrame = CFrame.lookAt(workspace.CurrentCamera.CFrame.Position, targetPos)
+                    local dist = (head.Position - root.Position).Magnitude
+                    if dist < minDist then
+                        closestPlayer = player
+                        minDist = dist
+                    end
                 end
             end
-        end)
-    end
+        end
+        
+        if closestPlayer and closestPlayer.Character then
+            local head = closestPlayer.Character:FindFirstChild("Head")
+            if head then
+                local headPos = head.Position
+                local myPos = root.Position
+
+                local flatDistance = (Vector3.new(headPos.X, 0, headPos.Z) - Vector3.new(myPos.X, 0, myPos.Z)).Magnitude
+
+                local heightOffset = 0
+                if flatDistance >= 50 then
+                    heightOffset = flatDistance * 1.2
+                elseif flatDistance >= 25 then
+                    heightOffset = flatDistance * 1.0
+                elseif flatDistance >= 10 then
+                    heightOffset = flatDistance * 0.5
+                else
+                    heightOffset = -2
+                end
+                
+                local targetHeightPos = Vector3.new(headPos.X, headPos.Y + heightOffset, headPos.Z)
+
+                root.CFrame = CFrame.lookAt(myPos, Vector3.new(headPos.X, myPos.Y, headPos.Z))
+
+                workspace.CurrentCamera.CFrame = CFrame.lookAt(workspace.CurrentCamera.CFrame.Position, targetHeightPos)
+            end
+        end
+    end)
+end
+
+
 
     ToggleButton.MouseButton1Click:Connect(function()
         AutoAimToggle = not AutoAimToggle
@@ -1117,40 +1378,49 @@ end
 
 local lastAnim
 RunService.Heartbeat:Connect(function()
-    if not root then return end
+    if not root or not character then return end
 
     for _, obj in ipairs(workspace:GetChildren()) do
-        if obj:IsA("Model") and isKillerObject(obj) and obj.PrimaryPart then
-            local dist = (obj.PrimaryPart.Position - root.Position).Magnitude
+        local isKiller = obj:FindFirstChild("Killerost") or obj:FindFirstChild("Lookscriptkiller")
+        
+        if isKiller and obj:IsA("Model") then
             local killerHum = obj:FindFirstChildOfClass("Humanoid")
+            local killerRoot = obj.PrimaryPart or obj:FindFirstChild("HumanoidRootPart")
 
-            if dist <= 20 and killerHum then
-                for _, track in ipairs(killerHum:GetPlayingAnimationTracks()) do
-                local animId = track.Animation.AnimationId or ""
-                local trackName = track.Name
-                local key = animId ~= "" and animId or trackName
-                
-                if string.find(animId, "80411309607666") or trackName:lower() == "slash" then
-                        if lastAnim ~= key then
-                            pressSpecialButton("crouch")
-                            lastAnim = key
-                            task.delay(5, function()
-                               lastAnim = ""
-                            end)
+            if killerHum and killerRoot then
+                local dist = (killerRoot.Position - root.Position).Magnitude
+                local playingTracks = killerHum:GetPlayingAnimationTracks()
+
+                if Autoparry and dist <= ParryDistance and character:FindFirstChild("Parrying Dagger") then
+                    for _, track in ipairs(playingTracks) do
+                        local animIdStr = track.Animation.AnimationId or ""
+                        local id = tonumber(string.match(animIdStr, "%d+"))
+                        
+                        if id and targetanims[id] then
+                            pressSpecialButton("Gui-mob")
+                            game.ReplicatedStorage.Remotes.Items["Parrying Dagger"].parry:FireServer()
+                            print("parried")
+                            break
                         end
-                        return
                     end
                 end
-            end
 
-            if Autoparry and dist <= 10 and character:FindFirstChild("Parrying Dagger") then
-                local rightArm = obj:FindFirstChild("Right Arm")
-                if rightArm then
-                    local sound = rightArm:FindFirstChildWhichIsA("Sound")
-                    if sound then
-                        game.ReplicatedStorage.Remotes.Items["Parrying Dagger"].parry:FireServer()
-                        pressSpecialButton("Gui-mob")
-                        return
+                if dist <= 20 then
+                    for _, track in ipairs(playingTracks) do
+                        local animId = track.Animation.AnimationId or ""
+                        local trackName = track.Name or ""
+                        local key = animId ~= "" and animId or trackName
+
+                        if string.find(animId, "80411309607666") or trackName:lower() == "slash" then
+                            if lastAnim ~= key then
+                                pressSpecialButton("crouch")
+                                lastAnim = key
+                                task.delay(5, function()
+                                    if lastAnim == key then lastAnim = "" end
+                                end)
+                            end
+                            return 
+                        end
                     end
                 end
             end
@@ -1305,14 +1575,18 @@ local function disableHitboxDesync()
     isSpinning = false
 end
 
-local DesyncHandle = TabHandles.Universal:Toggle({
+local OPSection = TabHandles.Universal:Section({ 
+    Title = "Fun",
+    Icon = "crown"
+})
+local DesyncHandle = OPSection:Toggle({
     Title = "Desync",
     Desc = "Use for better hitboxes or for faking position.",
     Value = false,
     Callback = function(state)
       task.spawn(function()
         if not setfflag then
-            warn("DESYNC NOT SUPPORTED IN YOUR EXECUTOR.")
+            warn("[AzureHub] Desync not supported. Desync will not work.")
             return
         end
         Desync = state
@@ -1334,7 +1608,7 @@ local DesyncHandle = TabHandles.Universal:Toggle({
     end
 })
 
-local DesyncTypeHandle = TabHandles.Universal:Dropdown({
+local DesyncTypeHandle = OPSection:Dropdown({
        Title =  "Desync Type",
        Values = { "Hitbox Improving", "Fake Position" },
        Value = "Hitbox Improving",
@@ -1344,7 +1618,24 @@ local DesyncTypeHandle = TabHandles.Universal:Dropdown({
              DesyncType = option
        end
 })
-local AutoEventHandle = TabHandles.Universal:Toggle({
+local InvisibilityHandle = OPSection:Toggle({
+       Title =  "Invisibility",
+       Desc = "Turns you invisible, others cannot see you.",
+       Value = false,
+       Callback = function(state)
+             InvisibilityToggle = state
+             if state then 
+                 enableInvis()
+             else
+                 disableInvis()
+             end
+       end
+})
+local UMiscSection = TabHandles.Universal:Section({ 
+    Title = "Misc",
+    Icon = "layout-grid"
+})
+local AutoEventHandle = UMiscSection:Toggle({
        Title =  "Auto Farm Event",
        Desc = "Farms existing event, current event: 🎄",
        Value = false,
@@ -1353,6 +1644,44 @@ local AutoEventHandle = TabHandles.Universal:Toggle({
              if state then
                  autofarmcurrency()
              end
+       end
+})
+UMiscSection:Button({
+       Title =  "Potato Graphics",
+       Callback = function(state)
+local lighting = game:GetService("Lighting")
+local terrain = workspace:FindFirstChildOfClass("Terrain")
+
+lighting.GlobalShadows = false
+lighting.FogEnd = 9e9
+lighting.Brightness = 1
+
+if terrain then
+    terrain.WaterWaveSize = 0
+    terrain.WaterWaveSpeed = 0
+    terrain.WaterReflectance = 0
+    terrain.WaterTransparency = 0
+end
+
+for _, v in ipairs(lighting:GetChildren()) do
+    if v:IsA("PostProcessEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("SunRaysEffect") then
+        v.Enabled = false
+    end
+end
+
+for _, v in ipairs(workspace:GetDescendants()) do
+    if v:IsA("BasePart") then
+        v.Material = Enum.Material.SmoothPlastic
+        v.Reflectance = 0
+    elseif v:IsA("Decal") or v:IsA("Texture") then
+        v.Transparency = 1
+    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+        v.Enabled = false
+    elseif v:IsA("MeshPart") then
+        v.Material = Enum.Material.SmoothPlastic
+        v.Reflectance = 0
+    end
+end
        end
 })
 
@@ -1529,12 +1858,20 @@ local SurvDefSection = TabHandles.Survivor:Section({
     Icon = "shield"
 })
 local AutoParryHandle = SurvDefSection:Toggle({
-       Title = "Auto Parry Killer (BETA)",
+       Title = "Auto Parry Killer",
        Desc = "Automatically stuns killer parrying him, must have parrying dagger as survivor.",
        Value = false,
        Callback = function(state)
              Autoparry = state
        end
+})
+local ParrySliderHandle = SurvDefSection:Slider({
+       Title = "Parry Radius",
+       Desc = "Modify the radius of auto parry (optional).",
+	Value = { Min = 5, Max = 30, Default = 10 },
+	Callback = function(Value)
+		ParryDistance = tonumber(Value)
+	end
 })
 SurvDefSection:Divider()
 local AutoDropHandle = SurvDefSection:Toggle({
@@ -1559,20 +1896,43 @@ local SurvMiscSection = TabHandles.Survivor:Section({
     Title = "Misc",
     Icon = "layout-grid"
 })
+local PerfectGenHandle = SurvMiscSection:Toggle({
+    Title = "Auto Perfect Generator",
+    Desc = "Does generator skill check at perfect spot.",
+    Value = false,
+    Callback = function(state)
+        if state then
+            GenConnection = RunService.Heartbeat:Connect(autoperfectgen)
+        else
+            if GenConnection then
+                GenConnection:Disconnect()
+                GenConnection = nil
+            end
+        end
+    end
+})
+local PerfectHealHandle = SurvMiscSection:Toggle({
+    Title = "Auto Perfect Heal",
+    Desc = "Does heal skill check at perfect spot.",
+    Value = false,
+    Callback = function(state)
+        if state then
+            HealConnection = RunService.Heartbeat:Connect(autoperfectheal)
+        else
+            if HealConnection then
+                HealConnection:Disconnect()
+                HealConnection = nil
+            end
+        end
+    end
+})
+SurvMiscSection:Divider()
 local AntiGFailHandle = SurvMiscSection:Toggle({
        Title = "Anti Fail Generator",
        Desc = "Failing generator skill check will not do anything.",
        Value = false,
        Callback = function(state)
              AntiGFail = state
-       end
-})
-local AntiHFailHandle = SurvMiscSection:Toggle({
-       Title = "Perfect Heal Check",
-       Desc = "Perfects heal check on appearing you still have to click not to fail.",
-       Value = false,
-       Callback = function(state)
-             AntiHFail = state
        end
 })
 local RemoveClothingsHandle = SurvMiscSection:Toggle({
@@ -1695,7 +2055,7 @@ local WsToggleHandle = TabHandles.Player:Toggle({
 })
 local WsSliderHandle = TabHandles.Player:Slider({
        Title = "WalkSpeed",
-	Value = { Min = 16, Max = 100, Default = 16 },
+	Value = { Min = 16, Max = 100, Default = 28 },
 	Callback = function(Value)
 		currentSpeed = Value
 	end
@@ -1831,6 +2191,10 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("ParrySliderHandle", ParrySliderHandle)
+            configFile:Register("PerfectHealHandle", PerfectHealHandle)
+            configFile:Register("PerfectGenHandle", PerfectGenHandle)
+            configFile:Register("InvisibilityHandle", InvisibilityHandle)
             configFile:Register("AutoEventHandle", AutoEventHandle)
             configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
             configFile:Register("DesyncHandle", DesyncHandle)
@@ -1872,6 +2236,10 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("ParrySliderHandle", ParrySliderHandle)
+    configFile:Register("PerfectHealHandle", PerfectHealHandle)
+    configFile:Register("PerfectGenHandle", PerfectGenHandle)
+    configFile:Register("InvisibilityHandle", InvisibilityHandle)
     configFile:Register("AutoEventHandle", AutoEventHandle)
     configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
     configFile:Register("DesyncHandle", DesyncHandle)
@@ -1925,6 +2293,10 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("ParrySliderHandle", ParrySliderHandle)
+                configFile:Register("PerfectHealHandle", PerfectHealHandle)
+                configFile:Register("PerfectGenHandle", PerfectGenHandle)
+                configFile:Register("InvisibilityHandle", InvisibilityHandle)
                 configFile:Register("AutoEventHandle", AutoEventHandle)
                 configFile:Register("ExpandHitboxesHandle", ExpandHitboxesHandle)
                 configFile:Register("DesyncHandle", DesyncHandle)
@@ -2040,11 +2412,11 @@ task.spawn(function()
 		    if not antiFlingToggle then antiFlingToggle = true end
 			for _, model in ipairs(workspace:GetChildren()) do
 				if model:IsA("Model") and model:FindFirstChild("Killerost") then
-					for _, partName in ipairs({"HumanoidRootPart", "Head", "Right Arm", "Left Arm", "Torso"}) do
+					for _, partName in ipairs({"HumanoidRootPart"}) do
 						local part = model:FindFirstChild(partName)
 						if part and part:IsA("BasePart") then
 							pcall(function()
-								part.Size = Vector3.new(50, 50, 50)
+								part.Size = Vector3.new(15, 15, 15)
 								part.Transparency = 1
 								part.Material = Enum.Material.Neon
 								part.CanCollide = false
@@ -2095,11 +2467,6 @@ end)
 
 local SkillCheckEvent = game.ReplicatedStorage.Remotes.Healing:WaitForChild("SkillCheckEvent")
 local SkillCheckResultEvent = game.ReplicatedStorage.Remotes.Healing:WaitForChild("SkillCheckResultEvent")
-
-SkillCheckEvent.OnClientEvent:Connect(function(context)
-    if not AntiHFail then return end
-    SkillCheckResultEvent:FireServer("success", 1, context)
-end)
 
 ReplicatedStorage.Remotes.Generator.SkillCheckEvent.OnClientEvent:Connect(function(generator, point, context)
     if not AntiGFail then return end
