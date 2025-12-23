@@ -1,3 +1,7 @@
+if not game:IsLoaded() then
+    game.IsLoaded:Wait()
+end
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -7,7 +11,7 @@ local Camera = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
-if setfpscap then setfpscap(120) else warn("[AzureHub] setfpscap not supported. Script will not load.") end
+if setfpscap then setfpscap(999) else warn("[AzureHub] setfpscap not supported. Script will not load.") end
 if not Drawing then warn("[AzureHub] No drawing found. Tracers will not be shown.") end
 local character
 local hum
@@ -47,7 +51,7 @@ local blacklist = {
     [3137137279] = true
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local authOR = false
@@ -764,42 +768,55 @@ local function clip()
 	end
 end
 
-local indexhook
-local newindexhook
+local supportsHooks = getrawmetatable and hookfunction and setreadonly
 
-indexhook = hookmetamethod(game, "__index", function(self, index)
-    if not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(lp.Character) then
-        if index == "WalkSpeed" then return 16 end
-    end
-    return indexhook(self, index)
-end)
+if supportsHooks then
+    local success, err = pcall(function()
+        local mt = getrawmetatable(game)
+        local oldIndex
+        local oldNewIndex
 
-newindexhook = hookmetamethod(game, "__newindex", function(self, index, value)
-    if not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(lp.Character) then
-        if index == "WalkSpeed" then return end
+        setreadonly(mt, false)
+
+        oldIndex = hookfunction(mt.__index, function(self, index)
+            if WalkToggle and not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(game.Players.LocalPlayer.Character) then
+                if index == "WalkSpeed" then
+                    return 16
+                end
+            end
+            return oldIndex(self, index)
+        end)
+
+        oldNewIndex = hookfunction(mt.__newindex, function(self, index, value)
+            if WalkToggle and not checkcaller() and self:IsA("Humanoid") and self:IsDescendantOf(game.Players.LocalPlayer.Character) then
+                if index == "WalkSpeed" then
+                    return 
+                end
+            end
+            return oldNewIndex(self, index, value)
+        end)
+
+        setreadonly(mt, true)
+    end)
+    
+    if not success then
+        warn("[AzureHub] Bypass failed to initialize: " .. tostring(err))
     end
-    return newindexhook(self, index, value)
-end)
+else
+    warn("[AzureHub] Executor does not support metatable hooking. Bypass skipped.")
+end
 
 local function applyBypassSpeed()
     task.spawn(function()
-        while true do
-            task.wait(0.2) 
-            
+        while task.wait(0.2) do
             if WalkToggle and lp.Character then
                 if hum then
-                    local conns = getconnections(hum:GetPropertyChangedSignal("WalkSpeed"))
-                    for i = 1, #conns do
-                        conns[i]:Disable()
-                    end
-                    
                     hum.WalkSpeed = currentSpeed
                 end
             end
         end
     end)
 end
-applyBypassSpeed()
 
 local crossUI
 
@@ -933,19 +950,6 @@ local GenConnection = nil
 local HealConnection = nil
 local genHitDone = false
 local healHitDone = false
-
-local function pressSpecialButton(args)
-    local pGui = lp:FindFirstChild("PlayerGui")
-    local survivor = pGui and pGui:FindFirstChild("Survivor-mob", true)
-    local button = survivor and survivor.Controls:FindFirstChild("action")
-    
-    if button and (button:IsA("TextButton") or button:IsA("ImageButton")) then
-        local conns = getconnections(button.MouseButton1Down)
-        for i = 1, #conns do
-            if conns[i].Function then conns[i].Function() end
-        end
-    end
-end
 
 local function autoperfectgen()
     local pGui = lp:FindFirstChild("PlayerGui")
@@ -1397,7 +1401,6 @@ RunService.Heartbeat:Connect(function()
                         if id and targetanims[id] then
                             pressSpecialButton("Gui-mob")
                             game.ReplicatedStorage.Remotes.Items["Parrying Dagger"].parry:FireServer()
-                            print("parried")
                             break
                         end
                     end
@@ -2049,11 +2052,12 @@ local WsToggleHandle = TabHandles.Player:Toggle({
 	Value = false,
 	Callback = function(state)
 		WalkToggle = state
+		if WalkToggle then applyBypassSpeed() end
 	end
 })
 local WsSliderHandle = TabHandles.Player:Slider({
        Title = "WalkSpeed",
-	Value = { Min = 16, Max = 100, Default = 28 },
+	Value = { Min = 10, Max = 100, Default = 28 },
 	Callback = function(Value)
 		currentSpeed = Value
 	end
@@ -2157,14 +2161,12 @@ local antiAdminHandle = TabHandles.Misc:Toggle({
 })
 
 task.spawn(function()
-	while task.wait(1) do
-		if antiAdminToggle then
+	while task.wait(1) and antiAdminToggle do
 			for _, plr in ipairs(Players:GetPlayers()) do
 				if plr ~= lp and (table.find(blacklist, plr.UserId) or bannedRanks[plr:GetRoleInGroup(gid)]) then
 					lp:Kick("Admin detected: " .. plr.Name)
 				end
 			end
-		end
 	end
 end)
 
@@ -2407,7 +2409,6 @@ task.spawn(function()
 		end
 
 		if ExpandToggle then
-		    if not antiFlingToggle then antiFlingToggle = true end
 			for _, model in ipairs(workspace:GetChildren()) do
 				if model:IsA("Model") and model:FindFirstChild("Killerost") then
 					for _, partName in ipairs({"HumanoidRootPart"}) do
