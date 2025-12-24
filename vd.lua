@@ -51,7 +51,7 @@ local blacklist = {
     [3137137279] = true
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local authOR = false
@@ -1389,8 +1389,8 @@ RunService.Heartbeat:Connect(function()
                         local id = tonumber(string.match(animIdStr, "%d+"))
                         
                         if id and targetanims[id] then
-                            pressSpecialButton("Gui-mob")
                             game.ReplicatedStorage.Remotes.Items["Parrying Dagger"].parry:FireServer()
+                            pressSpecialButton("Gui-mob")
                             break
                         end
                     end
