@@ -26,7 +26,7 @@ lp.CharacterAdded:Connect(function(newChar)
 end)
 
 local blacklist = {"Tatlis"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09", "sasha123jkj"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
@@ -548,32 +548,18 @@ local function startBATLoop()
     end)
 end
 
-RunService.Heartbeat:Connect(function()
+RunService.RenderStepped:Connect(function()
     if not lp then return end
-    
-    local currentTime = tick()
-    if currentTime - lastPingCheck > 2 then
-        lastPingCheck = currentTime
-        local ping = game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
-        
-        if ping > 300 and not highPingNotified then
-            WindUI:Notify({
-                Title = "High Ping!",
-                Content = "High ping detected, features may work incorrectly.",
-                Icon = "alert",
-                Duration = 3
-            })
-            highPingNotified = true
-        end
-    end
     
     local character = lp.Character
     if character and AutoDodgeToggle then
         local head = character:FindFirstChild("Head")
         if head then
-            for _, bat in pairs(workspace:GetDescendants()) do
-                if bat.Name == "Bat" and bat:IsA("Model") then
-                    local batPart = bat.PrimaryPart or bat:FindFirstChildWhichIsA("BasePart")
+            for _, model in pairs(workspace:GetChildren()) do
+                if model:IsA("Model") and model:FindFirstChild("Bat") then
+                    local bat = model.Bat
+                    local batPart = bat:IsA("BasePart") and bat or bat:FindFirstChildWhichIsA("BasePart")
+                    
                     if batPart and (head.Position - batPart.Position).Magnitude <= 2 then
                         local bufferToUse
                         if getTag(lp.Name) == "[ PREMIUM ]" then
@@ -581,7 +567,7 @@ RunService.Heartbeat:Connect(function()
                                 buffer.fromstring("\001;\140\017R\160O\218A"),
                                 buffer.fromstring("\001.\174vI\160O\218A"), 
                                 buffer.fromstring("\001|\r\195o\160O\218A"),
-                            buffer.fromstring("\001j\222\169\220|O\218A")
+                                buffer.fromstring("\001j\222\169\220|O\218A")
                             }
                             bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
                         else
@@ -594,53 +580,5 @@ RunService.Heartbeat:Connect(function()
                 end
             end
         end
-    end
-    
-    local gui = lp:FindFirstChildOfClass("PlayerGui")
-    if not gui then return end
-    
-    local slapGameUI = gui:FindFirstChild("SlapGameUI")
-    if not slapGameUI then return end
-    
-    local inGameHUD = slapGameUI:FindFirstChild("InGameHUD")
-    if not inGameHUD then
-        inGameHUD = slapGameUI:FindFirstChild("InGameHUD_Mobile")
-    end
-    if not inGameHUD then return end
-    
-    local frame = inGameHUD:FindFirstChild("HeavyweightSlider")
-    if not frame or not frame:IsA("Frame") or not frame.Visible then return end
-    
-    local spot = frame:FindFirstChild("Spot")
-    local marker = frame:FindFirstChild("Marker")
-    if not spot or not marker or not spot.Visible or not marker.Visible then return end
-    
-    local battleOptions = inGameHUD:FindFirstChild("BattleOptions")
-    if not battleOptions then return end
-    
-    local container = battleOptions:FindFirstChild("Container")
-    if not container then return end
-    
-    local slap = container:FindFirstChild("Slap") or container:FindFirstChild("slap")
-    if not slap or not slap.Visible then return end
-    
-    local mPos = marker.AbsolutePosition
-    local mSize = marker.AbsoluteSize
-    local sPos = spot.AbsolutePosition
-    local sSize = spot.AbsoluteSize
-    
-    local markerInSpot = mPos.X >= sPos.X and mPos.X + mSize.X <= sPos.X + sSize.X and mPos.Y >= sPos.Y and mPos.Y + mSize.Y <= sPos.Y + sSize.Y
-    
-    if markerInSpot and AutoHeavyweightToggle then
-        local slapPos = slap.AbsolutePosition
-        local slapSize = slap.AbsoluteSize
-        local clickX = slapPos.X + slapSize.X/2
-        local clickY = slapPos.Y + slapSize.Y/2
-        
-        task.spawn(function()
-            VIM:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
-            VIM:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
-            task.wait(0.05)
-        end)
     end
 end)
