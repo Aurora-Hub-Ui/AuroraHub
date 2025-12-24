@@ -23,7 +23,7 @@ lp.CharacterAdded:Connect(function(newChar)
 end)
 
 local blacklist = {}
-local premium_users= { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18"}
+local premium_users= { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
