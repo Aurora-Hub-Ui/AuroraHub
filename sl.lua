@@ -581,4 +581,54 @@ RunService.RenderStepped:Connect(function()
             end
         end
     end
+    
+    if character and AutoHeavyweightToggle then
+    local gui = lp:FindFirstChildOfClass("PlayerGui")
+    if not gui then return end
+
+    local slapGameUI = gui:FindFirstChild("SlapGameUI")
+    if not slapGameUI then return end
+
+    local inGameHUD = slapGameUI:FindFirstChild("InGameHUD")
+    if not inGameHUD then
+        inGameHUD = slapGameUI:FindFirstChild("InGameHUD_Mobile")
+    end
+    if not inGameHUD then return end
+
+    local frame = inGameHUD:FindFirstChild("HeavyweightSlider")
+    if not frame or not frame:IsA("Frame") or not frame.Visible then return end
+
+    local spot = frame:FindFirstChild("Spot")
+    local marker = frame:FindFirstChild("Marker")
+    if not spot or not marker or not spot.Visible or not marker.Visible then return end
+
+    local battleOptions = inGameHUD:FindFirstChild("BattleOptions")
+    if not battleOptions then return end
+
+    local container = battleOptions:FindFirstChild("Container")
+    if not container then return end
+
+    local slap = container:FindFirstChild("Slap") or container:FindFirstChild("slap")
+    if not slap or not slap.Visible then return end
+
+    local mPos = marker.AbsolutePosition
+    local mSize = marker.AbsoluteSize
+    local sPos = spot.AbsolutePosition
+    local sSize = spot.AbsoluteSize
+
+    local markerInSpot = mPos.X >= sPos.X and mPos.X + mSize.X <= sPos.X + sSize.X and mPos.Y >= sPos.Y and mPos.Y + mSize.Y <= sPos.Y + sSize.Y
+
+    if markerInSpot and AutoHeavyweightToggle then
+        local slapPos = slap.AbsolutePosition
+        local slapSize = slap.AbsoluteSize
+        local clickX = slapPos.X + slapSize.X/2
+        local clickY = slapPos.Y + slapSize.Y/2
+
+        task.spawn(function()
+            VIM:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+            VIM:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+            task.wait(0.05)
+        end)
+    end
+    end
 end)
