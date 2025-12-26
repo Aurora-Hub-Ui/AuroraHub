@@ -47,7 +47,7 @@ local blacklist = {
     [3137137279] = true
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09", "sasha123jkj", "top1co1nwatcher", "Faruozi", "612kt", "NatTheCreator969", "vieno124", "4Lyfn"}
+local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09", "sasha123jkj", "top1co1nwatcher", "Faruozi", "612kt", "NatTheCreator969", "vieno124", "4Lyfn", "Cres0L"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local authOR = false
@@ -963,6 +963,9 @@ local function autoperfectgen()
             local perfectStart = 104 + goal.Rotation
             
             if not genHitDone and currentRot >= (perfectStart + 1) and currentRot <= (perfectStart + 9) then
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+
                 pressSpecialButton("action")
                 genHitDone = true
             end
@@ -985,6 +988,8 @@ local function autoperfectheal()
             local perfectStart = 104 + goal.Rotation
             
             if not healHitDone and currentRot >= (perfectStart + 1) and currentRot <= (perfectStart + 9) then
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Space, false, game)
                 pressSpecialButton("action")
                 healHitDone = true
             end
