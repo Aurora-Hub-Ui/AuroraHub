@@ -1996,12 +1996,18 @@ SurvMiscSection:Button({
     end
 })
 
+local FOVRadius = 70
+RunService.RenderStepped:Connect(function()
+    if game.workspace.CurrentCamera.FieldOfView ~= FOVRadius then
+        game.workspace.CurrentCamera.FieldOfView = FOVRadius
+    end
+end)
 local FOVSliderHandle = TabHandles.Esp:Slider({
        Title = "FOV Radius",
        Desc = "Modify the radius of FOV.",
 	Value = { Min = 1, Max = 120, Default = 70 },
 	Callback = function(Value)
-		game.workspace.CurrentCamera.FieldOfView = tonumber(Value)
+		FOVRadius = tonumber(Value)
 	end
 })
 TabHandles.Esp:Button({
