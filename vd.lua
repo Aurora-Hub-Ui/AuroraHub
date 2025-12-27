@@ -217,6 +217,7 @@ local targetanims = {
     [98163597193511] = true,
     [111920872708571] = true,
     [106871536134254] = true,
+    [82666958311998] = true,
 }
 
 local toggles = {
@@ -1124,7 +1125,7 @@ local function CreateCross()
     local pg = game:GetService("CoreGui")
 
     crossUI = Instance.new("ScreenGui")
-    crossUI.Name = "CrosshairUI"
+    crossUI.Name = "roblox"
     crossUI.ResetOnSpawn = false
     crossUI.Parent = pg
 
@@ -1601,6 +1602,46 @@ local function disableHitboxDesync()
     isSpinning = false
 end
 
+local RemoveCrosshair = nil
+local function LoadCrosshair()
+    local cam = workspace.CurrentCamera
+    local lines = {}
+
+    local function createLine()
+        local l = Drawing.new("Line")
+        l.Visible = true; l.Color = Color3.fromRGB(255, 255, 255); l.Thickness = 1; l.Transparency = 1
+        table.insert(lines, l)
+        return l
+    end
+
+    local top, bottom, left, right = createLine(), createLine(), createLine(), createLine()
+
+    local function update()
+        local cx, cy = (cam.ViewportSize.X / 2) - 5, (cam.ViewportSize.Y / 2) + 10
+        local gap, len = 2, 5
+        top.From = Vector2.new(cx, cy - gap); top.To = Vector2.new(cx, cy - gap - len)
+        bottom.From = Vector2.new(cx, cy + gap); bottom.To = Vector2.new(cx, cy + gap + len)
+        left.From = Vector2.new(cx - gap, cy); left.To = Vector2.new(cx - gap - len, cy)
+        right.From = Vector2.new(cx + gap, cy); right.To = Vector2.new(cx + gap + len, cy)
+    end
+
+    update()
+    local connection = cam:GetPropertyChangedSignal("ViewportSize"):Connect(update)
+
+    local removing
+    removing = game:GetService("Players").LocalPlayer.CharacterRemoving:Connect(function()
+        connection:Disconnect()
+        removing:Disconnect()
+        for _, line in ipairs(lines) do line:Remove() end
+    end)
+
+    return function()
+        connection:Disconnect()
+        removing:Disconnect()
+        for _, line in ipairs(lines) do line:Remove() end
+    end
+end
+
 local OPSection = TabHandles.Universal:Section({ 
     Title = "Fun",
     Icon = "crown"
@@ -1669,6 +1710,23 @@ local AutoEventHandle = UMiscSection:Toggle({
              AutoEventToggle = state
              if state then
                  autofarmcurrency()
+             end
+       end
+})
+local CrosshairHandle = UMiscSection:Toggle({
+       Title = "Crosshair",
+       Desc = "Adds crosshair to the screen, useful with revolver.",
+       Value = false,
+       Callback = function(state)
+             if state then
+                 if not RemoveCrosshair then
+                     RemoveCrosshair = LoadCrosshair()
+                 end
+             else
+                 if RemoveCrosshair then
+                     RemoveCrosshair()
+                     RemoveCrosshair = nil
+                 end
              end
        end
 })
@@ -2143,7 +2201,7 @@ local HitSoundHandle = TabHandles.Misc:Input({
 
 local chaseThemeHandle = TabHandles.Misc:Dropdown({
        Title = "Chase Theme",
-       Values = { "Mila - Compass", "Close To Me" },
+       Values = { "Mila - Compass" },
        Value = "",
        AllowNone = true,
        Callback = function(option)
