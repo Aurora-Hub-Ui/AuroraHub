@@ -152,7 +152,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "24.12.25\n[/] Reverted Auto Aim Veil\n[/] Improved Auto Parry\n[/] Heavily Optimized Script\n[/] Optimized Auto Drop Pallets\n[/] Fixed ESP Not Working On Rooftop\n\n23.12.25\n[+] Invisibility\n[+] Auto Perfect Generator\n[+] Auto Perfect Heal\n[+] Potato Graphics (Boost FPS)\n[/] Improve Auto Parry (Works now, slightly improved)\n[/] Improve Auto Aim Veil (Still need to test, unstable)\n[/] ESP: Repaired Gens Highlights Green\n[/] Fix WalkSpeed Changer\n[/] Fix Hitbox Expander\n[/] Unlock FPS (built-in)\n[/] Fixed Lot Of Bugs (ex. script not loading)\n\n20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Updated To Latest Data\n[/] Fixed New Detections\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "27.12.25\n[+] FOV Radius\nGlobal: Fixed ESP\n\n24.12.25\n[/] Reverted Auto Aim Veil\n[/] Improved Auto Parry\n[/] Heavily Optimized Script\n[/] Optimized Auto Drop Pallets\n[/] Fixed ESP Not Working On Rooftop\n\n23.12.25\n[+] Invisibility\n[+] Auto Perfect Generator\n[+] Auto Perfect Heal\n[+] Potato Graphics (Boost FPS)\n[/] Improve Auto Parry (Works now, slightly improved)\n[/] Improve Auto Aim Veil (Still need to test, unstable)\n[/] ESP: Repaired Gens Highlights Green\n[/] Fix WalkSpeed Changer\n[/] Fix Hitbox Expander\n[/] Unlock FPS (built-in)\n[/] Fixed Lot Of Bugs (ex. script not loading)\n\n20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Updated To Latest Data\n[/] Fixed New Detections\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -377,6 +377,23 @@ local function getObjColor(obj)
     return Color3.fromRGB(0, 255, 0)
 end
 
+local function getRootPosition(target)
+    if target:IsA("BasePart") then 
+        return target.Position 
+    end
+    
+    if target:IsA("Model") then
+        if target.PrimaryPart then return target.PrimaryPart.Position end
+        
+        local root = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChild("VisibleParts")
+        if root and root:IsA("BasePart") then return root.Position end
+        
+        return target:GetPivot().Position
+    end
+    
+    return Vector3.new(0, 0, 0)
+end
+
 local function ensureHighlight(obj)
     if not ESPHighlight then
         if esp[obj] and esp[obj].highlight then
@@ -413,29 +430,27 @@ local function ensureBillboard(obj)
         if not head then return end
 
         local b = Instance.new("BillboardGui")
+        b.Name = "roblox"
         b.Size = UDim2.new(0, 200, 0, 50)
         b.Adornee = head
         b.AlwaysOnTop = true
+        b.MaxDistance = 5000
         b.Parent = obj
         
-        local n = Instance.new("TextLabel", b)
+        local n = Instance.new("TextLabel")
+        n.Name = "MainLabel"
+        n.Parent = b
         n.BackgroundTransparency = 1
-        n.Size = UDim2.new(1, 0, 0, 16)
-        n.Position = UDim2.new(0, 0, 0, -20)
-        n.Text = obj.Name
+        n.Size = UDim2.new(1, 0, 1, 0)
+        n.Text = ""
         n.Font = Enum.Font.SourceSansBold
         n.TextSize = 14
-        
-        local s = Instance.new("TextLabel", b)
-        s.BackgroundTransparency = 1
-        s.Size = UDim2.new(1, 0, 0, 14)
-        s.Position = UDim2.new(0, 0, 0, -5)
-        s.Font = Enum.Font.SourceSans
-        s.TextSize = 12
+        n.TextStrokeTransparency = 0
+        n.RichText = true
 
         esp[obj].billboard = b
         esp[obj].nameLabel = n
-        esp[obj].studsLabel = s
+        esp[obj].studsLabel = nil 
     end
 end
 
@@ -499,122 +514,125 @@ local function removeESP(obj)
     end
 end
 
-local lR = 0
-local rl = 1.5
---RunService.RenderStepped:Connect(function()
-RunService.Heartbeat:Connect(function()
-    if tick() - lR > rl then
-        local map = workspace:FindFirstChild("Map")
-        local searchFolders = {workspace, map}
-        
-        if map then
-            table.insert(searchFolders, map:FindFirstChild("Gens"))
-            table.insert(searchFolders, map:FindFirstChild("Rooftop"))
-            local rooftop = map:FindFirstChild("Rooftop")
-            if rooftop then
-                table.insert(searchFolders, rooftop:FindFirstChild("Nature"))
-            end
+local lR, rI = 0, 1.5
+local rootCache = {}
 
-            local chrisFolder = nil
-            for _, child in ipairs(map:GetChildren()) do
-                if string.find(string.lower(child.Name), "chris") then
-                    chrisFolder = child
-                    break
+RunService.Heartbeat:Connect(function()
+    local now = tick()
+    if now - lR > rI then
+        lR = now
+        local map = workspace:FindFirstChild("Map")
+        
+        for _, obj in ipairs(workspace:GetChildren()) do
+            if obj.Name ~= "Map" and obj ~= lp.Character and passesFilter(obj) then
+                ensureAllFor(obj)
+            end
+        end
+
+        if map then
+            for _, obj in ipairs(map:GetChildren()) do
+                if passesFilter(obj) then
+                    ensureAllFor(obj)
                 end
             end
-
-            if chrisFolder then
-                local giftsFolder = nil
-                for _, child in ipairs(chrisFolder:GetChildren()) do
-                    if string.find(string.lower(child.Name), "gift") then
-                        giftsFolder = child
-                        break
+            
+            local possible = {"Gens", "Rooftop", "Nature"}
+            for _, n in ipairs(possible) do
+                local f = map:FindFirstChild(n, true)
+                if f then
+                    for _, o in ipairs(f:GetChildren()) do
+                        if o ~= lp.Character and passesFilter(o) then ensureAllFor(o) end
                     end
                 end
+            end
 
-                if giftsFolder then
-                    for _, giftModel in ipairs(giftsFolder:GetChildren()) do
-                        local handle = giftModel:FindFirstChild("GiftHandle")
-                        if handle and passesFilter(handle) then
-                            ensureAllFor(handle)
+            for _, child in ipairs(map:GetChildren()) do
+                if child.Name:lower():find("chris") then
+                    local gifts = child:FindFirstChildOfClass("Folder") or child
+                    for _, g in ipairs(gifts:GetChildren()) do
+                        if g.Name:lower():find("gift") or g:FindFirstChild("GiftHandle") then
+                            local h = g:FindFirstChild("GiftHandle") or g
+                            if passesFilter(h) then ensureAllFor(h) end
                         end
                     end
                 end
             end
         end
-
-        for _, folder in ipairs(searchFolders) do
-            if folder then
-                for _, obj in ipairs(folder:GetChildren()) do
-                    if obj ~= lp.Character and passesFilter(obj) then
-                        ensureAllFor(obj)
-                    end
-                end
-            end
-        end
-        
-        lR = tick()
     end 
 
     local viewportSize = Camera.ViewportSize
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 
     for obj, data in pairs(esp) do
+        local color = getObjColor(obj)
+        
         if not obj or not obj.Parent or not passesFilter(obj) then
             removeESP(obj)
+            rootCache[obj] = nil
             continue
         end
 
-        local rootPart = (obj.Name == "GiftHandle" and obj) or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("HitBox") or obj:FindFirstChild("HB") or obj.PrimaryPart
-        if not rootPart then continue end
-        
-        local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+        local worldPos = getRootPosition(obj)
+        local screenPos, onScreen = Camera:WorldToViewportPoint(worldPos)
         local isVisible = onScreen and screenPos.Z > 0
+
+        if data.billboard then
+            local active = isVisible and (ESPNames or ESPStuds)
+            data.billboard.Enabled = active
+            
+            if active then
+                data.billboard.Adornee = obj:IsA("BasePart") and obj or obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
+                data.billboard.AlwaysOnTop = true
+                data.billboard.Size = UDim2.new(0, 200, 0, 50)
+                data.billboard.StudsOffset = Vector3.new(0, 3, 0)
+
+                local targetLabel = data.nameLabel or data.billboard:FindFirstChildOfClass("TextLabel")
+                if targetLabel and myRoot then
+                    targetLabel.Visible = true
+                    targetLabel.Size = UDim2.new(1, 0, 1, 0)
+                    targetLabel.BackgroundTransparency = 1
+                    
+                    local dist = (Camera.CFrame.Position - worldPos).Magnitude
+                    local name = (obj.Name == "GiftHandle") and "Present" or obj.Name
+                    
+                    if ESPNames and ESPStuds then
+                        targetLabel.Text = name .. " (" .. string.format("%.0fm", dist) .. ")"
+                    elseif ESPNames then
+                        targetLabel.Text = name
+                    elseif ESPStuds then
+                        targetLabel.Text = string.format("%.0fm", dist)
+                    end
+                    targetLabel.TextColor3 = color
+                end
+            end
+        end
 
         if tracers[obj] then
             tracers[obj].Visible = isVisible and ESPTracers
             if tracers[obj].Visible then
-                tracers[obj].Color = getObjColor(obj)
+                tracers[obj].Color = color
                 tracers[obj].From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
                 tracers[obj].To = Vector2.new(screenPos.X, screenPos.Y)
-            end
-        end
-
-        if data.billboard then
-            data.billboard.Enabled = isVisible and (ESPNames or ESPStuds)
-            if data.billboard.Enabled and myRoot then
-                if data.studsLabel then
-                    local dist = (myRoot.Position - rootPart.Position).Magnitude
-                    data.studsLabel.Text = math.floor(dist) .. "m"
-                    data.studsLabel.TextColor3 = getObjColor(obj)
-                end
-                if data.nameLabel then
-                    data.nameLabel.Text = (obj.Name == "GiftHandle") and "Present" or obj.Name
-                    data.nameLabel.TextColor3 = getObjColor(obj)
-                end
             end
         end
 
         if boxes[obj] then
             local box = boxes[obj]
             local showBox = isVisible and ESPBoxes
-            for _, line in pairs(box) do line.Visible = showBox end
-
+            for _, line in pairs(box) do line.Visible = showBox; line.Color = color end
             if showBox then
                 local size = (1 / screenPos.Z) * 1000 
                 local w, h = size * 0.6, size
-                if obj.Name == "GiftHandle" then w = size * 0.4; h = size * 0.4 end
-                
+                if obj.Name == "GiftHandle" then w, h = size * 0.4, size * 0.4 end
                 local x, y = screenPos.X, screenPos.Y
-                local col = getObjColor(obj)
-
-                box.tl.From = Vector2.new(x - w, y - h); box.tl.To = Vector2.new(x + w, y - h)
-                box.tr.From = Vector2.new(x + w, y - h); box.tr.To = Vector2.new(x + w, y + h)
-                box.br.From = Vector2.new(x + w, y + h); box.br.To = Vector2.new(x - w, y + h)
-                box.bl.From = Vector2.new(x - w, y + h); box.bl.To = Vector2.new(x - w, y - h)
-                for _, l in pairs(box) do l.Color = col end
+                box.tl.From = Vector2.new(x-w, y-h); box.tl.To = Vector2.new(x+w, y-h)
+                box.tr.From = Vector2.new(x+w, y-h); box.tr.To = Vector2.new(x+w, y+h)
+                box.br.From = Vector2.new(x+w, y+h); box.br.To = Vector2.new(x-w, y+h)
+                box.bl.From = Vector2.new(x-w, y+h); box.bl.To = Vector2.new(x-w, y-h)
             end
         end
+        
+        if data.highlight then data.highlight.FillColor = color end
     end
 end)
 
@@ -1978,6 +1996,14 @@ SurvMiscSection:Button({
     end
 })
 
+local FOVSliderHandle = TabHandles.Esp:Slider({
+       Title = "FOV Radius",
+       Desc = "Modify the radius of FOV.",
+	Value = { Min = 1, Max = 120, Default = 70 },
+	Callback = function(Value)
+		game.workspace.CurrentCamera.FieldOfView = tonumber(Value)
+	end
+})
 TabHandles.Esp:Button({
 	Title = "Full Bright",
 	Callback = function()
@@ -2169,11 +2195,11 @@ local antiAdminHandle = TabHandles.Misc:Toggle({
 
 task.spawn(function()
 	while task.wait(1) and antiAdminToggle do
-			for _, plr in ipairs(Players:GetPlayers()) do
-				if plr ~= lp and (table.find(blacklist, plr.UserId) or bannedRanks[plr:GetRoleInGroup(gid)]) then
-					lp:Kick("Admin detected: " .. plr.Name)
-				end
+	       for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= lp and (table.find(blacklist, plr.UserId) or bannedRanks[plr:GetRoleInGroup(gid)]) then
+				lp:Kick("Admin detected: " .. plr.Name)
 			end
+		end
 	end
 end)
 
@@ -2198,6 +2224,7 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("FOVSliderHandle", FOVSliderHandle)
             configFile:Register("ParrySliderHandle", ParrySliderHandle)
             configFile:Register("PerfectHealHandle", PerfectHealHandle)
             configFile:Register("PerfectGenHandle", PerfectGenHandle)
@@ -2243,6 +2270,7 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("FOVSliderHandle", FOVSliderHandle)
     configFile:Register("ParrySliderHandle", ParrySliderHandle)
     configFile:Register("PerfectHealHandle", PerfectHealHandle)
     configFile:Register("PerfectGenHandle", PerfectGenHandle)
@@ -2300,6 +2328,7 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("FOVSliderHandle", FOVSliderHandle)
                 configFile:Register("ParrySliderHandle", ParrySliderHandle)
                 configFile:Register("PerfectHealHandle", PerfectHealHandle)
                 configFile:Register("PerfectGenHandle", PerfectGenHandle)

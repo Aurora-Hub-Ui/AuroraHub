@@ -220,116 +220,161 @@ end
 
 local function ensureHighlight(obj)
     if not ESPHighlight then
-        if esp[obj] and esp[obj].highlight then esp[obj].highlight:Destroy() esp[obj].highlight = nil end
+        if esp[obj] and esp[obj].highlight then
+            esp[obj].highlight:Destroy()
+            esp[obj].highlight = nil
+        end
         return
     end
+    
     if not esp[obj].highlight then
         local h = Instance.new("Highlight")
         h.Adornee = obj
         h.FillTransparency = 0.5
         h.OutlineTransparency = 0
+        h.FillColor = getObjColor(obj)
+        h.OutlineColor = Color3.new(1, 1, 1)
         h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
         h.Parent = obj
         esp[obj].highlight = h
     end
-    esp[obj].highlight.FillColor = getObjColor(obj)
 end
 
 local function ensureBillboard(obj)
     if not (ESPNames or ESPStuds) then
-        if esp[obj].billboard then esp[obj].billboard:Destroy() esp[obj].billboard = nil end
+        if esp[obj].billboard then
+            esp[obj].billboard:Destroy()
+            esp[obj].billboard = nil
+        end
         return
     end
-    if not esp[obj].billboard then
-        local head = obj:FindFirstChild("Head") or obj:FindFirstChildWhichIsA("BasePart")
-        if not head then return end
-        local b = Instance.new("BillboardGui", obj)
-        b.Size = UDim2.new(0, 200, 0, 50); b.AlwaysOnTop = true; b.Adornee = head
-        
-        local n = Instance.new("TextLabel", b)
-        n.BackgroundTransparency = 1; n.Size = UDim2.new(1, 0, 0, 16); n.Position = UDim2.new(0, 0, 0, -20)
-        n.Text = obj.Name; n.Font = Enum.Font.SourceSansBold; n.TextSize = 14; n.TextColor3 = getObjColor(obj)
-        
-        local s = Instance.new("TextLabel", b)
-        s.BackgroundTransparency = 1; s.Size = UDim2.new(1, 0, 0, 14); s.Position = UDim2.new(0, 0, 0, -5)
-        s.Font = Enum.Font.SourceSans; s.TextSize = 12; s.TextColor3 = getObjColor(obj)
 
-        esp[obj].billboard = b; esp[obj].nameLabel = n; esp[obj].studsLabel = s
+    if not esp[obj].billboard then
+        local head = obj:FindFirstChild("Head") or obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildWhichIsA("BasePart")
+        if not head then return end
+
+        local b = Instance.new("BillboardGui")
+        b.Name = "roblox"
+        b.Size = UDim2.new(0, 200, 0, 50)
+        b.Adornee = head
+        b.AlwaysOnTop = true
+        b.MaxDistance = 5000
+        b.Parent = obj
+        
+        local n = Instance.new("TextLabel")
+        n.Name = "MainLabel"
+        n.Parent = b
+        n.BackgroundTransparency = 1
+        n.Size = UDim2.new(1, 0, 1, 0)
+        n.Text = ""
+        n.Font = Enum.Font.SourceSansBold
+        n.TextSize = 14
+        n.TextStrokeTransparency = 0
+        n.RichText = true
+
+        esp[obj].billboard = b
+        esp[obj].nameLabel = n
+        esp[obj].studsLabel = nil 
     end
 end
 
 local function ensureTracer(obj)
-    if not (DrawingAvailable and ESPTracers) then
+    if not ESPTracers then
         if tracers[obj] then tracers[obj]:Remove() tracers[obj] = nil end
         return
     end
+    
     if not tracers[obj] then
-        local L = Drawing.new("Line"); L.Thickness = 1; L.Transparency = 1
+        local L = Drawing.new("Line")
+        L.Thickness = 1
+        L.Transparency = 1
         tracers[obj] = L
     end
 end
 
 local function ensureBox(obj)
-    if not (DrawingAvailable and ESPBoxes) then
-        if boxes[obj] then for _, l in pairs(boxes[obj]) do l:Remove() end boxes[obj] = nil end
+    if not ESPBoxes then
+        if boxes[obj] then
+            for _, l in pairs(boxes[obj]) do l:Remove() end
+            boxes[obj] = nil
+        end
         return
     end
+
     if not boxes[obj] then
-        boxes[obj] = {tl = Drawing.new("Line"), tr = Drawing.new("Line"), bl = Drawing.new("Line"), br = Drawing.new("Line")}
-        for _, line in pairs(boxes[obj]) do line.Thickness = 1; line.Transparency = 1 end
+        boxes[obj] = {
+            tl = Drawing.new("Line"),
+            tr = Drawing.new("Line"),
+            bl = Drawing.new("Line"),
+            br = Drawing.new("Line")
+        }
+        for _, line in pairs(boxes[obj]) do
+            line.Thickness = 1
+            line.Transparency = 1
+        end
     end
 end
 
-function ensureAllFor(obj)
+local function ensureAllFor(obj)
     if not esp[obj] then esp[obj] = {} end
+    
     ensureHighlight(obj)
     ensureBillboard(obj)
     ensureTracer(obj)
     ensureBox(obj)
 end
 
-function removeESP(obj)
+local function removeESP(obj)
     local d = esp[obj]
     if d then
-        if d.highlight then d.highlight:Destroy() end
-        if d.billboard then d.billboard:Destroy() end
+        if d.highlight then pcall(function() d.highlight:Destroy() end) end
+        if d.billboard then pcall(function() d.billboard:Destroy() end) end
         esp[obj] = nil
     end
-    if tracers[obj] then tracers[obj]:Remove() tracers[obj] = nil end
-    if boxes[obj] then for _, l in pairs(boxes[obj]) do l:Remove() end boxes[obj] = nil end
+    if tracers[obj] then pcall(function() tracers[obj]:Remove() end) tracers[obj] = nil end
+    if boxes[obj] then
+        for _, l in pairs(boxes[obj]) do pcall(function() l:Remove() end) end
+        boxes[obj] = nil
+    end
 end
 
 local lR, rI = 0, 1.5
-RunService.RenderStepped:Connect(function()
-    local now = tick()
-    if now - lR > rI then
-        for _, obj in ipairs(workspace:GetChildren()) do
-            if obj ~= lp.Character and passesDropdownFilter(obj) then ensureAllFor(obj) end
-        end
+local rootCache = {}
 
+RunService.Heartbeat:Connect(function()
+    local now = tick()
+    
+    if now - lR > rI then
+        lR = now
+        for _, obj in ipairs(workspace:GetChildren()) do
+            if obj ~= lp.Character and passesDropdownFilter(obj) then 
+                ensureAllFor(obj) 
+            end
+        end
         local itemsFolder = workspace:FindFirstChild("Items")
         if itemsFolder then
             for _, item in ipairs(itemsFolder:GetChildren()) do
                 if passesDropdownFilter(item) then ensureAllFor(item) end
             end
         end
-        lR = now
     end
 
     local viewportSize = Camera.ViewportSize
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 
     for obj, data in pairs(esp) do
+        local color = getObjColor(obj)
+        
         if not obj or not obj.Parent or not passesDropdownFilter(obj) then
             removeESP(obj)
+            rootCache[obj] = nil
             continue
         end
 
         local worldPos = getRootPosition(obj)
         local screenPos, onScreen = Camera:WorldToViewportPoint(worldPos)
         local isVisible = onScreen and screenPos.Z > 0
-        local color = getObjColor(obj)
-
+        
         if tracers[obj] then
             tracers[obj].Visible = isVisible and ESPTracers
             if tracers[obj].Visible then
@@ -342,19 +387,27 @@ RunService.RenderStepped:Connect(function()
         if data.billboard then
             data.billboard.Enabled = isVisible and (ESPNames or ESPStuds)
             if data.billboard.Enabled and myRoot then
-                if data.studsLabel then
-                    local dist = (Camera.CFrame.Position - worldPos).Magnitude
-                    data.studsLabel.Text = string.format("%.0fm", dist)
-                    data.studsLabel.TextColor3 = color
+                local targetLabel = data.nameLabel or data.billboard:FindFirstChildOfClass("TextLabel")
+                if targetLabel then
+                     targetLabel.Visible = true
+                     local dist = (Camera.CFrame.Position - worldPos).Magnitude
+                     
+                     if ESPNames and ESPStuds then
+                         targetLabel.Text = obj.Name .. " (" .. string.format("%.0fm", dist) .. ")"
+                     elseif ESPNames then
+                         targetLabel.Text = obj.Name
+                     elseif ESPStuds then
+                         targetLabel.Text = string.format("%.0fm", dist)
+                     end
+                     targetLabel.TextColor3 = color
                 end
-                if data.nameLabel then data.nameLabel.TextColor3 = color end
             end
         end
 
         if boxes[obj] then
             local box = boxes[obj]
             local showBox = isVisible and ESPBoxes
-            for _, line in pairs(box) do line.Visible = showBox end
+            for _, line in pairs(box) do line.Visible = showBox; line.Color = color end
             if showBox then
                 local size = (1 / screenPos.Z) * 1000 
                 local w, h = size * 0.6, size
@@ -363,8 +416,11 @@ RunService.RenderStepped:Connect(function()
                 box.tr.From = Vector2.new(x+w, y-h); box.tr.To = Vector2.new(x+w, y+h)
                 box.br.From = Vector2.new(x+w, y+h); box.br.To = Vector2.new(x-w, y+h)
                 box.bl.From = Vector2.new(x-w, y+h); box.bl.To = Vector2.new(x-w, y-h)
-                for _, l in pairs(box) do l.Color = color end
             end
+        end
+        
+        if data.highlight then
+            data.highlight.FillColor = color
         end
     end
 end)

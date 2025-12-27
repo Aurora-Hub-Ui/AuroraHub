@@ -466,53 +466,72 @@ if ConfigManager then
     end
 end
 
-workspace.DescendantAdded:Connect(function(obj)
+workspace.ChildAdded:Connect(function(obj)
     local gui = lp:FindFirstChildOfClass("PlayerGui")
-    if not gui then return end
-    
-    local slapGameUI = gui:FindFirstChild("SlapGameUI")
+    local slapGameUI = gui and gui:FindFirstChild("SlapGameUI")
     if not slapGameUI then return end
     
-    local inGameHUD = slapGameUI:FindFirstChild("InGameHUD")
-    if not inGameHUD then
-        inGameHUD = slapGameUI:FindFirstChild("InGameHUD_Mobile")
-    end
-    if not inGameHUD then return end
-    
-    local battleOptions = inGameHUD:FindFirstChild("BattleOptions")
-    local container = battleOptions and battleOptions:FindFirstChild("Container")
+    local inGameHUD = slapGameUI:FindFirstChild("InGameHUD") or slapGameUI:FindFirstChild("InGameHUD_Mobile")
+    local container = inGameHUD and inGameHUD:FindFirstChild("BattleOptions") and inGameHUD.BattleOptions:FindFirstChild("Container")
     local feint = container and (container:FindFirstChild("Feint") or container:FindFirstChild("feint"))
+    if not feint then return end
     
-    if obj:IsA("Sound") and (obj.SoundId:find("71441046303493") or obj.SoundId:find("74444335852537") or obj.SoundId:find("110521080732746") or obj.SoundId:find("124228381910843") or obj.SoundId:find("132891780242917") or obj.SoundId:find("78547033616792")) and AutoDodgeToggle and feint and not feint.Visible then
-        local chance = math.random(0, 99)
-        if chance <= AutoDodgeChance then
-            local randomT = math.random(5, 20) / 100
-            
-            task.spawn(function()
-                task.wait(randomT)
+    local dodgeSounds = {
+        "71441046303493", "74444335852537", "110521080732746", 
+        "124228381910843", "132891780242917", "78547033616792"
+    }
+
+    local targetSound = nil
+    if obj:IsA("Sound") then
+        targetSound = obj
+    elseif obj:IsA("BasePart") or obj:IsA("Model") then
+        targetSound = obj:FindFirstChildOfClass("Sound")
+    end
+
+    if targetSound and AutoDodgeToggle and not feint.Visible then
+        local idMatch = false
+        for _, id in ipairs(dodgeSounds) do
+            if targetSound.SoundId:find(id) then
+                idMatch = true
+                break
+            end
+        end
+
+        if idMatch then
+            local chance = math.random(0, 99)
+            if chance <= AutoDodgeChance then
+                local randomT = math.random(5, 20) / 100
                 
-                local bufferToUse
-                if getTag(lp.Name) == "[ PREMIUM ]" then
-                    local premiumBuffers = {
-                        buffer.fromstring("\001;\140\017R\160O\218A"),
-                        buffer.fromstring("\001.\174vI\160O\218A"), 
-                        buffer.fromstring("\001|\r\195o\160O\218A"),
-                        buffer.fromstring("\001j\222\169\220|O\218A")
-                    }
-                    bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
-                else
-                    bufferToUse = buffer.fromstring("\001j\222\169\220|O\218A")
-                end
-                
-                game:GetService("ReplicatedStorage"):WaitForChild("ZAP"):WaitForChild("COMBAT_RELIABLE"):FireServer(bufferToUse, {})
-            end)
-        else
-            WindUI:Notify({
-                Title = "Failed To Dodge!",
-                Content = chance .. " > " .. AutoDodgeChance .. ", compared by Dodging Chance.",
-                Icon = "alert",
-                Duration = 1.5
-            })
+                task.spawn(function()
+                    task.wait(randomT)
+                    
+                    local bufferToUse
+                    if getTag(lp.Name) == "[ PREMIUM ]" then
+                        local premiumBuffers = {
+                            buffer.fromstring("\001;\140\017R\160O\218A"),
+                            buffer.fromstring("\001.\174vI\160O\218A"), 
+                            buffer.fromstring("\001|\r\195o\160O\218A"),
+                            buffer.fromstring("\001j\222\169\220|O\218A")
+                        }
+                        bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
+                    else
+                        bufferToUse = buffer.fromstring("\001j\222\169\220|O\218A")
+                    end
+                    
+                    local zap = game:GetService("ReplicatedStorage"):FindFirstChild("ZAP")
+                    local combat = zap and zap:FindFirstChild("COMBAT_RELIABLE")
+                    if combat then
+                        combat:FireServer(bufferToUse, {})
+                    end
+                end)
+            else
+                WindUI:Notify({
+                    Title = "Failed To Dodge!",
+                    Content = chance .. " > " .. AutoDodgeChance .. " (Dodge Failed)",
+                    Icon = "alert-circle",
+                    Duration = 1.5
+                })
+            end
         end
     end
 end)
@@ -548,7 +567,7 @@ local function startBATLoop()
     end)
 end
 
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     if not lp then return end
     
     local character = lp.Character

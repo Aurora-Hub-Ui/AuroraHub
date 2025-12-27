@@ -537,6 +537,23 @@ local function getObjColor(obj)
     return Color3.fromRGB(0, 255, 0)
 end
 
+local function getRootPosition(target)
+    if target:IsA("BasePart") then 
+        return target.Position 
+    end
+    
+    if target:IsA("Model") then
+        if target.PrimaryPart then return target.PrimaryPart.Position end
+        
+        local root = target:FindFirstChild("HumanoidRootPart") or target:FindFirstChild("VisibleParts")
+        if root and root:IsA("BasePart") then return root.Position end
+        
+        return target:GetPivot().Position
+    end
+    
+    return Vector3.new(0, 0, 0)
+end
+
 local function ensureHighlight(obj)
     if not ESPHighlight then
         if esp[obj] and esp[obj].highlight then
@@ -573,29 +590,27 @@ local function ensureBillboard(obj)
         if not head then return end
 
         local b = Instance.new("BillboardGui")
+        b.Name = "roblox"
         b.Size = UDim2.new(0, 200, 0, 50)
         b.Adornee = head
         b.AlwaysOnTop = true
+        b.MaxDistance = 5000
         b.Parent = obj
         
-        local n = Instance.new("TextLabel", b)
+        local n = Instance.new("TextLabel")
+        n.Name = "MainLabel"
+        n.Parent = b
         n.BackgroundTransparency = 1
-        n.Size = UDim2.new(1, 0, 0, 16)
-        n.Position = UDim2.new(0, 0, 0, -20)
-        n.Text = obj.Name
+        n.Size = UDim2.new(1, 0, 1, 0)
+        n.Text = ""
         n.Font = Enum.Font.SourceSansBold
         n.TextSize = 14
-        
-        local s = Instance.new("TextLabel", b)
-        s.BackgroundTransparency = 1
-        s.Size = UDim2.new(1, 0, 0, 14)
-        s.Position = UDim2.new(0, 0, 0, -5)
-        s.Font = Enum.Font.SourceSans
-        s.TextSize = 12
+        n.TextStrokeTransparency = 0
+        n.RichText = true
 
         esp[obj].billboard = b
         esp[obj].nameLabel = n
-        esp[obj].studsLabel = s
+        esp[obj].studsLabel = nil 
     end
 end
 
@@ -659,96 +674,92 @@ local function removeESP(obj)
     end
 end
 
-local lR = 0
-local rl = 1.5
+local lR, rI = 0, 1.5
+local rootCache = {}
 
-RunService.RenderStepped:Connect(function()
-    if tick() - lR > rl then
+RunService.Heartbeat:Connect(function()
+    local now = tick()
+    if now - lR > rI then
+        lR = now
         for _, obj in ipairs(workspace:FindFirstChild("GameplayFolder"):FindFirstChild("Rooms"):GetDescendants()) do
             if obj ~= lp.Character and passesFilter(obj) then
                 ensureAllFor(obj)
             end
         end
-        lR = tick()
-    end
+    end 
 
     local viewportSize = Camera.ViewportSize
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 
     for obj, data in pairs(esp) do
+        local color = getObjColor(obj)
+        
         if not obj or not obj.Parent or not passesFilter(obj) then
             removeESP(obj)
+            rootCache[obj] = nil
             continue
         end
 
-        local function getRootPosition(target)
-            if target:IsA("BasePart") then
-                return target.Position
-            elseif target:IsA("Model") then
-                if target.PrimaryPart and target.PrimaryPart:IsA("BasePart") then
-                    return target.PrimaryPart.Position
-                end
-                
-                for _, child in ipairs(target:GetChildren()) do
-                    if child:IsA("BasePart") then
-                        return child.Position
-                    end
-                end
-            end
-            
-            if target:IsA("Model") then
-                return target:GetPivot().Position
-            end
-            
-            return Vector3.new(0, 0, 0)
-        end
-        
-        local worldPosition = getRootPosition(obj)
-        
-        local screenPos, onScreen = Camera:WorldToViewportPoint(worldPosition)
+        local worldPos = getRootPosition(obj)
+        local screenPos, onScreen = Camera:WorldToViewportPoint(worldPos)
         local isVisible = onScreen and screenPos.Z > 0
+
+        if data.billboard then
+            local active = isVisible and (ESPNames or ESPStuds)
+            data.billboard.Enabled = active
+            
+            if active then
+                data.billboard.Adornee = obj:IsA("BasePart") and obj or obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart
+                data.billboard.AlwaysOnTop = true
+                data.billboard.Size = UDim2.new(0, 200, 0, 50)
+                data.billboard.StudsOffset = Vector3.new(0, 3, 0)
+
+                local targetLabel = data.nameLabel or data.billboard:FindFirstChildOfClass("TextLabel")
+                if targetLabel and myRoot then
+                    targetLabel.Visible = true
+                    targetLabel.Size = UDim2.new(1, 0, 1, 0)
+                    targetLabel.BackgroundTransparency = 1
+                    
+                    local dist = (Camera.CFrame.Position - worldPos).Magnitude
+                    local name = obj.Name
+                    
+                    if ESPNames and ESPStuds then
+                        targetLabel.Text = name .. " (" .. string.format("%.0fm", dist) .. ")"
+                    elseif ESPNames then
+                        targetLabel.Text = name
+                    elseif ESPStuds then
+                        targetLabel.Text = string.format("%.0fm", dist)
+                    end
+                    targetLabel.TextColor3 = color
+                end
+            end
+        end
 
         if tracers[obj] then
             tracers[obj].Visible = isVisible and ESPTracers
             if tracers[obj].Visible then
-                tracers[obj].Color = getObjColor(obj)
+                tracers[obj].Color = color
                 tracers[obj].From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
                 tracers[obj].To = Vector2.new(screenPos.X, screenPos.Y)
-            end
-        end
-
-        if data.billboard then
-            data.billboard.Enabled = isVisible and (ESPNames or ESPStuds)
-            if data.billboard.Enabled and myRoot then
-                if data.studsLabel then
-                    local dist = (myRoot.Position - worldPosition).Magnitude
-                    data.studsLabel.Text = math.floor(dist) .. "m"
-                    data.studsLabel.TextColor3 = getObjColor(obj)
-                end
-                if data.nameLabel then
-                    data.nameLabel.TextColor3 = getObjColor(obj)
-                end
             end
         end
 
         if boxes[obj] then
             local box = boxes[obj]
             local showBox = isVisible and ESPBoxes
-            for _, line in pairs(box) do line.Visible = showBox end
-
+            for _, line in pairs(box) do line.Visible = showBox; line.Color = color end
             if showBox then
                 local size = (1 / screenPos.Z) * 1000 
                 local w, h = size * 0.6, size
                 local x, y = screenPos.X, screenPos.Y
-                local col = getObjColor(obj)
-
-                box.tl.From = Vector2.new(x - w, y - h); box.tl.To = Vector2.new(x + w, y - h)
-                box.tr.From = Vector2.new(x + w, y - h); box.tr.To = Vector2.new(x + w, y + h)
-                box.br.From = Vector2.new(x + w, y + h); box.br.To = Vector2.new(x - w, y + h)
-                box.bl.From = Vector2.new(x - w, y + h); box.bl.To = Vector2.new(x - w, y - h)
-                for _, l in pairs(box) do l.Color = col end
+                box.tl.From = Vector2.new(x-w, y-h); box.tl.To = Vector2.new(x+w, y-h)
+                box.tr.From = Vector2.new(x+w, y-h); box.tr.To = Vector2.new(x+w, y+h)
+                box.br.From = Vector2.new(x+w, y+h); box.br.To = Vector2.new(x-w, y+h)
+                box.bl.From = Vector2.new(x-w, y+h); box.bl.To = Vector2.new(x-w, y-h)
             end
         end
+        
+        if data.highlight then data.highlight.FillColor = color end
     end
 end)
 
