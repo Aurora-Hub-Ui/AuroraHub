@@ -26,14 +26,11 @@ end)
 local blacklist = {
     [1848960] = true
 }
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09", "sasha123jkj", "top1co1nwatcher", "Faruozi", "612kt", "NatTheCreator969", "vieno124", "4Lyfn", "Cres0L"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local function getTag(name)
-    for _, v in ipairs(premium_users) do
-        if v == name then
-            return "[ PREMIUM ]"
-        end
+    if getgenv().PREMIUM_KEY == true then
+        return "[ PREMIUM ]"
     end
     return "[ FREEMIUM ]"
 end
@@ -777,13 +774,9 @@ PredictionHandle = SheriffSection:Toggle({
     Value = false,
     Callback = function(state)
         if state then
-            for _, name in ipairs(premium_users) do
-                if lp.Name == name then
-                    PredictionToggle = true
-                    return
-                end
-            end
-
+            if getgenv().PREMIUM_KEY then
+                PredictionToggle = true
+            else
             PredictionToggle = false
             WindUI:Notify({
                 Title = "Premium Feature",
@@ -793,6 +786,7 @@ PredictionHandle = SheriffSection:Toggle({
             })
             if PredictionHandle then
                 PredictionHandle:Set(false)
+            end
             end
         else
             PredictionToggle = false

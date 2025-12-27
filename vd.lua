@@ -47,7 +47,6 @@ local blacklist = {
     [3137137279] = true
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
-local premium_users = { "Tgpeek1", "Technique12_12", "Vbn_bountyhunter", "Waiteronewater", "iruzruz", "731niic", "RRQLEMONNl", "pedro377637", "blorospo", "flespos83", "prexos837", "polop7365", "Jaycol1", "NoSoyDekuGuys", "KandaKoe", "balle0704", "artile134", "urboyfiePoP", "Bva_Back", "Jinnxftw", "Zyxnn_18", "fanSukasusu", "tutioenRobloxgenial", "aldofp09", "sasha123jkj", "top1co1nwatcher", "Faruozi", "612kt", "NatTheCreator969", "vieno124", "4Lyfn", "Cres0L"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local authOR = false
@@ -60,10 +59,8 @@ for _, v in ipairs(testers) do
 end
 
 local function getTag(name)
-    for _, v in ipairs(premium_users) do
-        if v == name then
-            return "[ PREMIUM ]"
-        end
+    if getgenv().PREMIUM_KEY == true then
+        return "[ PREMIUM ]"
     end
     return "[ FREEMIUM ]"
 end
@@ -1780,15 +1777,7 @@ InfThingsHandle = KillerSection:Toggle({
     Value = false,
     Callback = function(state)
         if state then
-            local isPremium = false
-            for _, name in ipairs(premium_users) do
-                if lp.Name == name then
-                    isPremium = true
-                    break
-                end
-            end
-
-            if isPremium then
+            if getgenv().PREMIUM_KEY then
                 InfThingsToggle = true
             else
                 InfThingsToggle = false
@@ -1883,22 +1872,19 @@ GodModeHandle = SurvSection:Toggle({
     Value = false,
     Callback = function(state)
         if state then
-            for _, name in ipairs(premium_users) do
-                if lp.Name == name then
-                    GodmodeToggle = true
-                    return
+            if getgenv().PREMIUM_KEY then
+                GodmodeToggle = true
+            else
+                GodmodeToggle = false
+                WindUI:Notify({
+                    Title = "Premium Feature",
+                    Content = "This feature is only for premium users, get premium in our discord server.",
+                    Icon = "info",
+                    Duration = 3
+                })
+                if GodModeHandle then
+                    GodModeHandle:Set(false)
                 end
-            end
-
-            GodmodeToggle = false
-            WindUI:Notify({
-                Title = "Premium Feature",
-                Content = "This feature is only for premium users, get premium in our discord server.",
-                Icon = "info",
-                Duration = 3
-            })
-            if GodModeHandle then
-                GodModeHandle:Set(false)
             end
         else
             GodmodeToggle = false
