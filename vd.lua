@@ -671,7 +671,7 @@ local function setupFakeCharacter()
     Part = Instance.new("Part")
     Part.Anchored = true
     Part.Size = Vector3.new(10, 1, 10)
-    Part.CFrame = CFrame.new(0, -500, 0)
+    Part.CFrame = CFrame.new(0, 200, 0)
     Part.CanCollide = true
     Part.Parent = workspace
 
