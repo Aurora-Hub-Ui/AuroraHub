@@ -116,7 +116,7 @@ local TabHandles = {
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "19.12.25\n[+] Murder Mystery 2\n[+] Fixed Detections",
+    Desc = "19.12.25\n[+] Flick",
     Locked = false,
     Buttons = {
         {
