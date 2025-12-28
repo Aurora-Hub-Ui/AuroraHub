@@ -677,10 +677,12 @@ RunService.Heartbeat:Connect(function()
     local now = tick()
     if now - lR > rI then
         lR = now
+        if workspace:FindFirstChild("GameplayFolder") then
         for _, obj in ipairs(workspace:FindFirstChild("GameplayFolder"):FindFirstChild("Rooms"):GetDescendants()) do
             if obj ~= lp.Character and passesFilter(obj) then
                 ensureAllFor(obj)
             end
+        end
         end
     end 
 

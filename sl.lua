@@ -114,7 +114,7 @@ local TabHandles = {
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "21.12.25[+] Auto Dodge: Demon Fox\n[/] Updated To Latest Data\n\n16.12.25\n[/] Improved Auto Dodge (Bat)\n[/] Fixed Bugs\n\n14.12.25\n[+] Randomized Buffers (Premium, No Detections)\n[/] Improve Auto Dodge\n- Supported Auto Dodge: Slap, Ninja, Swap, Heavyweight, Bat, Demon Fox.\n\n13.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
+    Desc = "28.12.25\n[/] Updated To Latest Data\n[+] Auto Counter Slap\n- Must have demon fox/heavyweight.\n\n21.12.25\n[+] Auto Dodge: Demon Fox\n[/] Updated To Latest Data\n\n16.12.25\n[/] Improved Auto Dodge (Bat)\n[/] Fixed Bugs\n\n14.12.25\n[+] Randomized Buffers (Premium, No Detections)\n[/] Improve Auto Dodge\n- Supported Auto Dodge: Slap, Ninja, Swap, Heavyweight, Bat, Demon Fox.\n\n13.12.25\n[+] Slap\n[+] Features\n[+] Fixed Detections",
     Locked = false,
     Buttons = {
         {
@@ -125,6 +125,7 @@ local updparagraph = Logs:Paragraph({
     }
 })
 
+local AutoCounterToggle = false
 local AutoDodgeToggle = false
 local AutoDodgeChance = 100
 local AutoHeavyweightToggle = false
@@ -215,6 +216,14 @@ local HeavyweightHandle = TabHandles.Attacker:Toggle({
 	end
 })]]
 
+local CounterHandle = TabHandles.Defender:Toggle({
+	Title = "Auto Counter Slap",
+	Desc = "Counters opponent's slap if you have counter style.",
+	Value = false,
+	Callback = function(state)
+		AutoCounterToggle = state
+	end
+})
 local DodgeHandle = TabHandles.Defender:Toggle({
 	Title = "Auto Dodge",
 	Desc = "Dodges opponent's slap.",
@@ -342,6 +351,7 @@ TabHandles.Config:Input({
             configFile = ConfigManager:CreateConfig(configName)
             configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
             configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
+            configFile:Register("CounterHandle", CounterHandle)
             configFile:Register("DodgeHandle", DodgeHandle)
             configFile:Register("BatHandle", BatHandle)
             configFile:Register("HeavyweightHandle", HeavyweightHandle)
@@ -367,6 +377,7 @@ if ConfigManager then
     configFile = ConfigManager:CreateConfig(configName)
     configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
     configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
+    configFile:Register("CounterHandle", CounterHandle)
     configFile:Register("DodgeHandle", DodgeHandle)
     configFile:Register("BatHandle", BatHandle)
     configFile:Register("HeavyweightHandle", HeavyweightHandle)
@@ -402,6 +413,7 @@ if ConfigManager then
                 configFile = ConfigManager:CreateConfig(configName)
                 configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
                 configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
+                configFile:Register("CounterHandle", CounterHandle)
                 configFile:Register("DodgeHandle", DodgeHandle)
                 configFile:Register("BatHandle", BatHandle)
                 configFile:Register("HeavyweightHandle", HeavyweightHandle)
@@ -471,11 +483,17 @@ workspace.ChildAdded:Connect(function(obj)
     local inGameHUD = slapGameUI:FindFirstChild("InGameHUD") or slapGameUI:FindFirstChild("InGameHUD_Mobile")
     local container = inGameHUD and inGameHUD:FindFirstChild("BattleOptions") and inGameHUD.BattleOptions:FindFirstChild("Container")
     local feint = container and (container:FindFirstChild("Feint") or container:FindFirstChild("feint"))
+    local abilityLabel = container and container:FindFirstChild("Ability"):FindFirstChild("Contents"):FindFirstChild("Text")
+    
     if not feint then return end
     
     local dodgeSounds = {
         "71441046303493", "74444335852537", "110521080732746", 
         "124228381910843", "132891780242917", "78547033616792"
+    }
+    local counterSounds = {
+        "71441046303493", "74444335852537", "110521080732746", 
+        "124228381910843", "132891780242917"
     }
 
     local targetSound = nil
@@ -485,49 +503,88 @@ workspace.ChildAdded:Connect(function(obj)
         targetSound = obj:FindFirstChildOfClass("Sound")
     end
 
-    if targetSound and AutoDodgeToggle and not feint.Visible then
-        local idMatch = false
-        for _, id in ipairs(dodgeSounds) do
-            if targetSound.SoundId:find(id) then
-                idMatch = true
-                break
+    if targetSound then
+        if AutoDodgeToggle and not feint.Visible then
+            local idMatch = false
+            for _, id in ipairs(dodgeSounds) do
+                if targetSound.SoundId:find(id) then
+                    idMatch = true
+                    break
+                end
+            end
+
+            if idMatch then
+                local chance = math.random(0, 99)
+                if chance <= AutoDodgeChance then
+                    local randomT = math.random(5, 20) / 100
+                    
+                    task.spawn(function()
+                        task.wait(randomT)
+                        
+                        local bufferToUse
+                        if getTag(lp.Name) == "[ PREMIUM ]" then
+                            local premiumBuffers = {
+                                buffer.fromstring("\001;\140\017R\160O\218A"),
+                                buffer.fromstring("\001.\174vI\160O\218A"), 
+                                buffer.fromstring("\001|\r\195o\160O\218A"),
+                                buffer.fromstring("\001j\222\169\220|O\218A")
+                            }
+                            bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
+                        else
+                            bufferToUse = buffer.fromstring("\001j\222\169\220|O\218A")
+                        end
+                        
+                        local zap = game:GetService("ReplicatedStorage"):FindFirstChild("ZAP")
+                        local combat = zap and zap:FindFirstChild("COMBAT_RELIABLE")
+                        if combat then
+                            combat:FireServer(bufferToUse, {})
+                        end
+                    end)
+                else
+                    WindUI:Notify({
+                        Title = "Failed To Dodge!",
+                        Content = chance .. " > " .. AutoDodgeChance .. " (Dodge Failed)",
+                        Icon = "alert-circle",
+                        Duration = 1.5
+                    })
+                end
             end
         end
+        
+        if AutoCounterToggle and abilityLabel and not feint.Visible then
+            local isCounterSound = false
+            for _, id in ipairs(counterSounds) do
+                if targetSound.SoundId:find(id) then
+                    isCounterSound = true
+                    break
+                end
+            end
+            
+            if isCounterSound then
+                local rawText = abilityLabel.ContentText or ""
+                local cleanText = string.lower(string.gsub(rawText, "[^%w]", ""))
 
-        if idMatch then
-            local chance = math.random(0, 99)
-            if chance <= AutoDodgeChance then
-                local randomT = math.random(5, 20) / 100
-                
-                task.spawn(function()
-                    task.wait(randomT)
-                    
-                    local bufferToUse
-                    if getTag(lp.Name) == "[ PREMIUM ]" then
-                        local premiumBuffers = {
-                            buffer.fromstring("\001;\140\017R\160O\218A"),
-                            buffer.fromstring("\001.\174vI\160O\218A"), 
-                            buffer.fromstring("\001|\r\195o\160O\218A"),
-                            buffer.fromstring("\001j\222\169\220|O\218A")
-                        }
-                        bufferToUse = premiumBuffers[math.random(#premiumBuffers)]
-                    else
-                        bufferToUse = buffer.fromstring("\001j\222\169\220|O\218A")
-                    end
+                if cleanText == "demonfox" or cleanText == "brace" then
+                    local realtext = cleanText
+                    local lengthByte = "\b"
+
+if cleanText == "brace" then
+    realtext = "heavyweight"
+    lengthByte = "\v"
+end
+
+local args = {
+    buffer.fromstring("\000" .. lengthByte .. "\000" .. realtext),
+    {}
+}
                     
                     local zap = game:GetService("ReplicatedStorage"):FindFirstChild("ZAP")
-                    local combat = zap and zap:FindFirstChild("COMBAT_RELIABLE")
-                    if combat then
-                        combat:FireServer(bufferToUse, {})
+                    local abilityRel = zap and zap:FindFirstChild("ABILITY_RELIABLE")
+                    
+                    if abilityRel then
+                        abilityRel:FireServer(unpack(args))
                     end
-                end)
-            else
-                WindUI:Notify({
-                    Title = "Failed To Dodge!",
-                    Content = chance .. " > " .. AutoDodgeChance .. " (Dodge Failed)",
-                    Icon = "alert-circle",
-                    Duration = 1.5
-                })
+                end
             end
         end
     end
