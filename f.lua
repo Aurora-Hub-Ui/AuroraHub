@@ -743,6 +743,20 @@ end
     end
 })
 
+local FOVRadius = 70
+RunService.RenderStepped:Connect(function()
+    if game.workspace.CurrentCamera.FieldOfView ~= FOVRadius then
+        game.workspace.CurrentCamera.FieldOfView = FOVRadius
+    end
+end)
+local FOVSliderHandle = TabHandles.Esp:Slider({
+       Title = "FOV Radius",
+       Desc = "Modify the radius of FOV.",
+	Value = { Min = 1, Max = 120, Default = 70 },
+	Callback = function(Value)
+		FOVRadius = tonumber(Value)
+	end
+})
 TabHandles.Esp:Button({
 	Title = "Full Bright",
 	Callback = function()
@@ -903,6 +917,7 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("FOVSliderHandle", FOVSliderHandle)
             configFile:Register("FOVRadiusHandle", FOVRadiusHandle)
             configFile:Register("AimbotHandle", AimbotHandle)
                 configFile:Register("FOVHandle", FOVHandle)
@@ -937,6 +952,7 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("FOVSliderHandle", FOVSliderHandle)
     configFile:Register("FOVRadiusHandle", FOVRadiusHandle)
     configFile:Register("AimbotHandle", AimbotHandle)
                 configFile:Register("FOVHandle", FOVHandle)
@@ -981,6 +997,7 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("FOVSliderHandle", FOVSliderHandle)
                 configFile:Register("FOVRadiusHandle", FOVRadiusHandle)
                 configFile:Register("AimbotHandle", AimbotHandle)
                 configFile:Register("FOVHandle", FOVHandle)
