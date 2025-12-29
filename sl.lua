@@ -516,7 +516,7 @@ workspace.ChildAdded:Connect(function(obj)
             if idMatch then
                 local chance = math.random(0, 99)
                 if chance <= AutoDodgeChance then
-                    local randomT = math.random(5, 20) / 100
+                    local randomT = math.random(5, 13) / 100
                     
                     task.spawn(function()
                         task.wait(randomT)
