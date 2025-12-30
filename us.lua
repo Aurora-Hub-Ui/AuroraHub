@@ -163,6 +163,15 @@ Window:CreateTopbarButton("theme-switcher", "moon", function()
 end, 990)
 Window:SetToggleKey(Enum.KeyCode.K)
 
+Window:EditOpenButton({
+    Title = "Open Azure Hub " .. getTag(lp.Name),
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
 local Logs = Window:Tab({ Title = "|  Update Logs", Icon = "scroll-text" })
 Window:Divider()
 
