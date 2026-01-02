@@ -257,6 +257,7 @@ function Library:CreateWindow(Config)
             return KeybindBtn
         end
 
+        -- [ MODIFIED CREATETOGGLE FUNCTION ]
         function Interface.CreateToggle(Config)
             local SaveKey = Config.Title; if CurrentSettings[SaveKey] ~= nil then Config.Value = CurrentSettings[SaveKey] end
             local ToggleFrame = Create("Frame", { Parent = ParentContainer, Size = UDim2.new(1, 0, 0, 32), BackgroundColor3 = Color3.fromRGB(25, 25, 25), BackgroundTransparency = ElemBgTrans })
@@ -267,12 +268,28 @@ function Library:CreateWindow(Config)
             Create("UICorner", {Parent = SwitchBG, CornerRadius = UDim.new(1, 0)})
             local Circle = Create("Frame", { Parent = SwitchBG, Size = UDim2.new(0, 12, 0, 12), Position = Config.Value and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6), BackgroundColor3 = Color3.fromRGB(255, 255, 255) })
             Create("UICorner", {Parent = Circle, CornerRadius = UDim.new(1, 0)})
+            
             local Enabled = Config.Value or false
-            if Enabled and Config.Callback then task.spawn(function() Config.Callback(Enabled) end) end
-            local function ToggleLogic()
-                Enabled = not Enabled; TweenService:Create(SwitchBG, TweenInfo.new(0.2), {BackgroundColor3 = Enabled and Color3.fromRGB(40, 200, 80) or Color3.fromRGB(50, 50, 50)}):Play(); TweenService:Create(Circle, TweenInfo.new(0.2), {Position = Enabled and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)}):Play()
-                CurrentSettings[SaveKey] = Enabled; SaveSettings(); if Config.Callback then Config.Callback(Enabled) end
+            
+            -- Visual Update Function (Exposed to Callback)
+            local function SetState(NewState)
+                Enabled = NewState
+                TweenService:Create(SwitchBG, TweenInfo.new(0.2), {BackgroundColor3 = Enabled and Color3.fromRGB(40, 200, 80) or Color3.fromRGB(50, 50, 50)}):Play()
+                TweenService:Create(Circle, TweenInfo.new(0.2), {Position = Enabled and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)}):Play()
+                CurrentSettings[SaveKey] = Enabled
+                SaveSettings()
+                -- Note: We do NOT call Config.Callback here to avoid infinite loops if the user sets state inside callback
             end
+
+            -- Initial Trigger
+            if Enabled and Config.Callback then task.spawn(function() Config.Callback(Enabled, SetState) end) end
+            
+            local function ToggleLogic()
+                local NewValue = not Enabled
+                SetState(NewValue)
+                if Config.Callback then Config.Callback(NewValue, SetState) end
+            end
+            
             SwitchBG.MouseButton1Click:Connect(ToggleLogic)
             if Config.Keybind then local KbBtn = CreateKeybind(ToggleFrame, Config.Keybind, ToggleLogic); if KbBtn then KbBtn.Position = UDim2.new(1, -70, 0.5, -8) end end
             if AddToSearch then table.insert(AllElements, {Frame = ToggleFrame, Title = Config.Title, OriginalParent = ParentContainer}) end
