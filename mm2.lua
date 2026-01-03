@@ -72,10 +72,11 @@ Window:EditOpenButton({
     Title = "Open Azure Hub " .. getTag(lp.Name),
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
-    OnlyMobile = false,
+    OnlyMobile = true,
     Enabled = true,
     Draggable = true,
 })
+if not game.UserInputService.TouchEnabled then WindUI:Notify({ Title = "Azure Hub", Content = "Use 'K' Button To Toggle UI.", Icon = "info", Duration = 3 }) end
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")

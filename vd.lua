@@ -7,8 +7,7 @@ local Camera = workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
-if setfpscap then setfpscap(999) else warn("[AzureHub] setfpscap not supported. FPS will-not be unlocked.") end
-if not Drawing then warn("[AzureHub] No drawing found. Tracers will not be shown.") end
+
 local character
 local hum
 local root
@@ -48,15 +47,6 @@ local blacklist = {
 }
 local testers = {"Tgpeek1", "Technique12_12", "urboyfiePoP", "Bva_Back"}
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
-local authOR = false
-for _, v in ipairs(testers) do
-    if v == lp.Name then
-    authOR = true
-    warn("[AzureHub] Tester authorized.")
-    break
-    end
-end
 
 local function getTag(name)
     if getgenv().PREMIUM_KEY == true then
@@ -115,10 +105,11 @@ Window:EditOpenButton({
     Title = "Open Azure Hub " .. getTag(lp.Name),
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
-    OnlyMobile = false,
+    OnlyMobile = true,
     Enabled = true,
     Draggable = true,
 })
+if not game.UserInputService.TouchEnabled then WindUI:Notify({ Title = "Azure Hub", Content = "Use 'K' Button To Toggle UI.", Icon = "info", Duration = 3 }) end
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
@@ -149,7 +140,7 @@ Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
 
 local updparagraph = Logs:Paragraph({
     Title = "Update Logs",
-    Desc = "27.12.25\n[+] FOV Radius\n[/] Improved Invisibility\n[/] Improved Perfect Skill Checks\n\n24.12.25\n[/] Reverted Auto Aim Veil\n[/] Improved Auto Parry\n[/] Heavily Optimized Script\n[/] Optimized Auto Drop Pallets\n[/] Fixed ESP Not Working On Rooftop\n\n23.12.25\n[+] Invisibility\n[+] Auto Perfect Generator\n[+] Auto Perfect Heal\n[+] Potato Graphics (Boost FPS)\n[/] Improve Auto Parry (Works now, slightly improved)\n[/] Improve Auto Aim Veil (Still need to test, unstable)\n[/] ESP: Repaired Gens Highlights Green\n[/] Fix WalkSpeed Changer\n[/] Fix Hitbox Expander\n[/] Unlock FPS (built-in)\n[/] Fixed Lot Of Bugs (ex. script not loading)\n\n20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Updated To Latest Data\n[/] Fixed New Detections\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
+    Desc = "02.01.25\n[+] Veil (Infinite Abilities, Untested)\n[-] Jeff (Infinite Abilities, Patched)\n[/] Auto Parry Bug Fixes\n[/] More PC Support Features\n\n27.12.25\n[+] FOV Radius\n[/] Improved Invisibility\n[/] Improved Perfect Skill Checks\n\n24.12.25\n[/] Reverted Auto Aim Veil\n[/] Improved Auto Parry\n[/] Heavily Optimized Script\n[/] Optimized Auto Drop Pallets\n[/] Fixed ESP Not Working On Rooftop\n\n23.12.25\n[+] Invisibility\n[+] Auto Perfect Generator\n[+] Auto Perfect Heal\n[+] Potato Graphics (Boost FPS)\n[/] Improve Auto Parry (Works now, slightly improved)\n[/] Improve Auto Aim Veil (Still need to test, unstable)\n[/] ESP: Repaired Gens Highlights Green\n[/] Fix WalkSpeed Changer\n[/] Fix Hitbox Expander\n[/] Unlock FPS (built-in)\n[/] Fixed Lot Of Bugs (ex. script not loading)\n\n20.12.25\n[+] Auto Presents\n[+] ESP: Presents\n[/] Updated To Latest Data\n[/] Fixed New Detections\n[/] Fixed Lot Of Bugs\n\n18.12.25\n[+] Expand Killer Hitboxes (flashlight)\n[/] Improved Auto Attack (revolver)\n[/] Fixed Some Bugs (not desync)\n\n16.12.25\n[/] Fixed Shooting Takes Time\n[-] Expand Survivor Hitboxes (Detected)\n\n12.12.25\nUniversal Tab:\n[+] Desync\n[+] Desync Options\n- Hitbox Improving makes your server-side visualizer sync faster and move forward.\n- Fake Position makes everyone see you at the place you activated Desync.\n\n30.11.25\n[/] Updated To Latest Data\n[-] Grab Nearest Player (Detected)\n[-] Carry Nearest Player (Detected)\n\n14.11.25\n[-] ESP: Pumpkins\n\n8.10.25\n[+] Damage Aura\nDefense:\n[+] Grab Nearest Player (Premium)\n[+] Carry Nearest Player (Premium)\n\n31.10.25\n[+] Updated To Latest Data\n[+] Auto Drop Pallete\n[+] Auto Aim Spear (Veil)\n[+] Remove Veil Clothings\n[+] ESP: Pumpkins\n[/] Bug Fixes\n\n24.09.25\n[+] Hit Sound\n[+] Chase Theme\n[+] In-Built Auto Dodge Slash\n[+] In-Built Fix Carry Bug\n\n23.09.25\n[+] God Mode\n[-] No Damage Patched\n\n3.09.25\n[+] Violence District\n[+] Premium Features",
     Locked = false,
     Buttons = {
         {
@@ -227,9 +218,11 @@ local toggles = {
 
 local function getKiller()
     local weapon = character:FindFirstChild("Weapon")
-    if not weapon then return nil end
-
     local rightArm = weapon:FindFirstChild("Right Arm")
+    
+    if character:FindFirstChild("spearmanager") then
+        return "Veil"
+    end
 
     if rightArm and rightArm:FindFirstChild("Machete") then
         if rightArm and rightArm.Machete:FindFirstChild("pCube4_knife_0") then
@@ -241,7 +234,7 @@ local function getKiller()
     elseif rightArm and rightArm:FindFirstChild("Knife") then
         return "Stalker"
 
-    elseif weapon:FindFirstChild("Chainsaw") then
+    elseif weapon and weapon:FindFirstChild("Chainsaw") then
         return "Masked"
     end
 
@@ -272,9 +265,14 @@ local function hookButton(btn)
                 game.ReplicatedStorage.Remotes.Killers.Jason.LakeMist:FireServer(toggles.JasonMist)
             end
 
-        elseif killer == "Jeff" then
-            if btn.Name == "move1" then
-                game.ReplicatedStorage.Remotes.Killers.Killer.ActivatePower:FireServer()
+        elseif killer == "Veil" then
+            if btn.Name == "move1" or btn.Name == "move2" then
+            local lookDirection = Camera.CFrame.LookVector
+            local args = {
+              lookDirection,
+              5.290782451629639
+            }
+            ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Killers"):WaitForChild("Veil"):WaitForChild("Spearthrow"):FireServer(unpack(args))
             end
 
         elseif killer == "Stalker" then
@@ -688,12 +686,11 @@ local function setupFakeCharacter()
     end
     
     task.spawn(function()
-        while true do
+        while task.wait(0.1) do
             if IsInvisible and RealCharacter and RealCharacter:FindFirstChild("HumanoidRootPart") then
                 RealCharacter.HumanoidRootPart.CFrame = Part.CFrame * CFrame.new(0, 5, 0)
                 RealCharacter.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
             end
-            task.wait(0.1)
         end
     end)
     
@@ -1406,6 +1403,7 @@ RunService.Heartbeat:Connect(function()
                         local id = tonumber(string.match(animIdStr, "%d+"))
                         
                         if id and targetanims[id] then
+                            if character:GetAttribute("IsHooked") or character:GetAttribute("IsCarried") then continue end
                             game.ReplicatedStorage.Remotes.Items["Parrying Dagger"].parry:FireServer()
                             pressSpecialButton("Gui-mob")
                             break
@@ -1422,6 +1420,8 @@ RunService.Heartbeat:Connect(function()
                         if string.find(animId, "80411309607666") or trackName:lower() == "slash" then
                             if lastAnim ~= key then
                                 pressSpecialButton("crouch")
+                                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Mechanics"):WaitForChild("ChangeAttribute"):FireServer("Crouchingserver", true)
+                                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Chase"):WaitForChild("Runevent"):FireServer(game.Players.LocalPlayer.Character, false)
                                 lastAnim = key
                                 task.delay(5, function()
                                     if lastAnim == key then lastAnim = "" end
@@ -1675,7 +1675,7 @@ local DesyncHandle = OPSection:Toggle({
 local DesyncTypeHandle = OPSection:Dropdown({
        Title =  "Desync Type",
        Values = { "Hitbox Improving", "Fake Position" },
-       Value = "Hitbox Improving",
+       Value = DesyncType,
        Multi = false,
        AllowNone = false,
        Callback = function(option)
@@ -1773,7 +1773,7 @@ local KillerSection = TabHandles.Killer:Section({
 local InfThingsHandle
 InfThingsHandle = KillerSection:Toggle({
     Title = "Infinite Abilities " .. (getTag(lp.Name) == "[ FREEMIUM ]" and "(PREMIUM)" or ""),
-    Desc = "Includes no attack cooldown. Supported killers for inf abillities: Slasher, Masked, Jeff, Stalker.",
+    Desc = "Includes no attack cooldown. Supported killers for inf abillities: Slasher, Masked, Veil, Stalker.",
     Value = false,
     Callback = function(state)
         if state then
@@ -2188,7 +2188,7 @@ local HitSoundHandle = TabHandles.Misc:Input({
 local chaseThemeHandle = TabHandles.Misc:Dropdown({
        Title = "Chase Theme",
        Values = { "Mila - Compass" },
-       Value = "",
+       Value = chasetheme,
        AllowNone = true,
        Callback = function(option)
        chasetheme = option

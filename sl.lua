@@ -9,6 +9,8 @@ local UserInputService = game:GetService("UserInputService")
 local PlayerGUI = lp:FindFirstChildOfClass("PlayerGui")
 local VIM = game:GetService("VirtualInputManager")
 local GuiService = game:GetService("GuiService")
+local rollargs = { buffer.fromstring("\000\001"), {}}
+local rollremote = ReplicatedStorage.ZAP.SPIN_RELIABLE
 
 local character
 local hum
@@ -82,10 +84,11 @@ Window:EditOpenButton({
     Title = "Open Azure Hub " .. getTag(lp.Name),
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
-    OnlyMobile = false,
+    OnlyMobile = true,
     Enabled = true,
     Draggable = true,
 })
+if not game.UserInputService.TouchEnabled then WindUI:Notify({ Title = "Azure Hub", Content = "Use 'K' Button To Toggle UI.", Icon = "info", Duration = 3 }) end
 
 Window:CreateTopbarButton("theme-switcher", "moon", function()
     WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
@@ -107,6 +110,7 @@ local Tabs = {
 local TabHandles = {
      Attacker = Tabs.Features:Tab({ Title = "|  Attacker", Icon = "swords" }),
      Defender = Tabs.Features:Tab({ Title = "|  Defender", Icon = "shield" }),
+     Lobby = Tabs.Features:Tab({ Title = "| Lobby", Icon = "orbit" }),
      Player = Tabs.Features:Tab({ Title = "|  Player", Icon = "users-round" }),
      Misc = Tabs.Features:Tab({ Title = "|  Misc", Icon = "layout-grid" }),
      Config = Tabs.Utilities:Tab({ Title = "|  Configuration", Icon = "settings" })
@@ -131,6 +135,8 @@ local AutoDodgeChance = 100
 local AutoHeavyweightToggle = false
 local AutoBatToggle = false
 local NotifyOnFail = false
+local AutoRollToggle = false
+local AutoRollType = {}
 
 local WalkToggle = false
 local currentSpeed = 16
@@ -207,14 +213,6 @@ local HeavyweightHandle = TabHandles.Attacker:Toggle({
 		AutoHeavyweightToggle = state
 	end
 })
---[[local BatHandle = TabHandles.Attacker:Toggle({
-	Title = "Auto Perfect Bat",
-	Desc = "Clicks all the circles at the perfect timing.",
-	Value = false,
-	Callback = function(state)
-		AutoBatToggle = state
-	end
-})]]
 
 local CounterHandle = TabHandles.Defender:Toggle({
 	Title = "Auto Counter Slap",
@@ -248,6 +246,32 @@ local NotifyOnFailHandle = TabHandles.Defender:Toggle({
 	Callback = function(state)
 		NotifyOnFail = state
 	end
+})
+
+local AutoRollHandle
+AutoRollHandle = TabHandles.Lobby:Toggle({
+	Title = "Auto Roll",
+	Desc = "Automatically spins for you, stops once target style drops.",
+	Value = false,
+	Callback = function(state)
+		if not AutoRollType then
+		    WindUI:Notify({ Title = "Azure Hub", Content = "Choose Target Style.", Icon = "triangle-alert", Duration = 2 })
+		    AutoRollToggle = false
+		    AutoRollHandle:Set(false)
+		else
+		    AutoRollToggle = state
+		end
+	end
+})
+local RollDropdownHandle = TabHandles.Lobby:Dropdown({
+        Title = "Target Style",
+        Values = { "Ninja", "Magician", "All or Nothing", "Mind Reader", "Rabbit", "Swap", "Heavyweight", "Bat", "Demon Fox", "Copy" },
+        Value = { "" },
+        Multi = true,
+        AllowNone = false,
+        Callback = function(option)
+              AutoRollType = option
+        end
 })
 
 local NoclipHandle = TabHandles.Player:Toggle({
@@ -349,6 +373,8 @@ TabHandles.Config:Input({
         configName = value
         if ConfigManager then
             configFile = ConfigManager:CreateConfig(configName)
+            configFile:Register("RollDropdownHandle", RollDropdownHandle)
+            configFile:Register("AutoRollHandle", AutoRollHandle)
             configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
             configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
             configFile:Register("CounterHandle", CounterHandle)
@@ -375,6 +401,8 @@ if ConfigManager then
     ConfigManager:Init(Window)
     
     configFile = ConfigManager:CreateConfig(configName)
+    configFile:Register("RollDropdownHandle", RollDropdownHandle)
+    configFile:Register("AutoRollHandle", AutoRollHandle)
     configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
     configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
     configFile:Register("CounterHandle", CounterHandle)
@@ -411,6 +439,8 @@ if ConfigManager then
         Callback = function()
            if not configFile then
                 configFile = ConfigManager:CreateConfig(configName)
+                configFile:Register("RollDropdownHandle", RollDropdownHandle)
+                configFile:Register("AutoRollHandle", AutoRollHandle)
                 configFile:Register("NotifyOnFailHandle", NotifyOnFailHandle)
                 configFile:Register("DodgeChanceHandle", DodgeChanceHandle)
                 configFile:Register("CounterHandle", CounterHandle)
@@ -704,6 +734,31 @@ RunService.Heartbeat:Connect(function()
         end)
     end
     end
+end)
+
+task.spawn(function()
+   while task.wait(0.1) do
+       if character and AutoRollToggle then
+        local gui = lp:FindFirstChildOfClass("PlayerGui")
+        if not gui then return end
+
+        local slapGameUI = gui:FindFirstChild("SlapGameUI")
+        if not slapGameUI then return end
+
+        local StyleHUD = slapGameUI:FindFirstChild("StyleHUD")
+        if not StyleHUD then return end
+        
+        local Path = StyleHUD:FindFirstChild("CurrentStyle"):FindFirstChild("Style"):FindFirstChild("TopLayer"):FindFirstChild("TextLabel")
+        if not Path then return end
+        
+        local Current = Path.ContentText
+        if not table.find(AutoRollType, Current) then
+            rollremote:FireServer(buffer.fromstring("\000\001"))
+            rollremote:FireServer(buffer.fromstring("\000\003"))
+            task.wait(0.1)
+        end
+    end
+   end
 end)
 
 task.spawn(function()
